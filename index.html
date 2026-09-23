@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tiny AI "Language" Model</title>
+  <title>Tiny ChatGPT Evolution Lab</title>
   <style>
     :root {
       --bg: #0b0b0b;
@@ -18,6 +18,8 @@
       --yellow: #ffd95a;
       --orange: #ff9b4d;
       --red: #ff6b6b;
+      --cyan: #62dff6;
+      --pink: #ff7ebb;
     }
 
     * {
@@ -709,6 +711,510 @@
       color: var(--text);
     }
 
+    .history-note {
+      margin-top: 14px;
+      background: rgba(98, 223, 246, 0.08);
+      border: 2px solid var(--cyan);
+      border-radius: 18px;
+      padding: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .history-note strong {
+      color: var(--cyan);
+    }
+
+    .version-jump {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .version-jump a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      text-align: center;
+      background: #0b0b0b;
+      border: 1px solid #424242;
+      border-radius: 12px;
+      padding: 10px 8px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .version-jump a:hover,
+    .version-jump a:focus {
+      border-color: var(--yellow);
+      outline: none;
+    }
+
+    .compare-console {
+      margin: 0 0 22px;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(98, 223, 246, 0.11), rgba(180, 124, 255, 0.10));
+      border: 2px solid var(--cyan);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .compare-console h2 {
+      margin: 0 0 5px;
+      font-size: 24px;
+    }
+
+    .compare-console p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .compare-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    #evolutionPrompt {
+      border: 2px solid var(--cyan);
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .run-all-btn {
+      background: var(--cyan);
+      color: #071014;
+      min-width: 190px;
+    }
+
+    .comparison-status {
+      min-height: 20px;
+      margin-top: 9px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .version-stage {
+      position: relative;
+      margin: 0 0 26px;
+      padding: 18px;
+      border: 2px solid #383838;
+      border-radius: 26px;
+      background: rgba(13, 13, 13, 0.88);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+      scroll-margin-top: 18px;
+    }
+
+    .version-stage.v0 { border-color: #727272; }
+    .version-stage.v1 { border-color: var(--blue); }
+    .version-stage.v2 { border-color: var(--purple); }
+    .version-stage.v3 { border-color: var(--orange); }
+    .version-stage.v35 { border-color: var(--green); }
+
+    .version-heading {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #393939;
+    }
+
+    .version-badge {
+      min-width: 90px;
+      min-height: 76px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      color: #090909;
+      font-size: 27px;
+      line-height: 1;
+      font-weight: 1000;
+      padding: 12px;
+    }
+
+    .v0 .version-badge { background: #d4d4d4; }
+    .v1 .version-badge { background: var(--blue); }
+    .v2 .version-badge { background: var(--purple); }
+    .v3 .version-badge { background: var(--orange); }
+    .v35 .version-badge { background: var(--green); }
+
+    .version-heading h2 {
+      margin: 0 0 5px;
+      font-size: 27px;
+      letter-spacing: -0.035em;
+    }
+
+    .version-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .era-chip {
+      align-self: start;
+      white-space: nowrap;
+      border: 1px solid #454545;
+      background: #080808;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 0 0 15px;
+    }
+
+    .capability {
+      background: #080808;
+      border: 1px solid #333;
+      border-radius: 13px;
+      padding: 10px;
+    }
+
+    .capability strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 12px;
+    }
+
+    .meter {
+      height: 7px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #262626;
+    }
+
+    .meter span {
+      display: block;
+      height: 100%;
+      width: var(--value);
+      background: var(--meter-color, var(--cyan));
+      border-radius: inherit;
+    }
+
+    .model-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 14px;
+    }
+
+    .model-panel {
+      min-width: 0;
+      background: #151515;
+      border: 1px solid #363636;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .model-panel h3 {
+      margin: 0 0 5px;
+      font-size: 18px;
+    }
+
+    .model-panel > p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.42;
+      font-size: 14px;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 12px 0;
+    }
+
+    .pipe-step {
+      position: relative;
+      min-height: 72px;
+      border-radius: 12px;
+      border: 1px solid #404040;
+      background: #090909;
+      padding: 9px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--muted);
+    }
+
+    .pipe-step strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .pipe-step.active {
+      border-color: var(--meter-color, var(--cyan));
+      box-shadow: inset 0 0 20px color-mix(in srgb, var(--meter-color, var(--cyan)) 10%, transparent);
+    }
+
+    .compact-input,
+    textarea.compact-textarea,
+    select.compact-input {
+      min-height: 0;
+      border: 2px solid #515151;
+    }
+
+    textarea.compact-textarea {
+      min-height: 112px;
+      font-size: 14px;
+    }
+
+    .version-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .version-actions button {
+      background: #ededed;
+      color: #111;
+    }
+
+    .version-actions .ghost-btn {
+      background: #292929;
+      color: var(--text);
+      border: 1px solid #484848;
+    }
+
+    .model-output {
+      min-height: 144px;
+      white-space: pre-wrap;
+      background: #070707;
+      border: 2px solid #414141;
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .inside-box {
+      margin-top: 10px;
+      background: #080808;
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 11px;
+    }
+
+    .inside-row {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid #272727;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .inside-row:last-child {
+      border-bottom: 0;
+    }
+
+    .inside-row strong {
+      color: var(--muted);
+    }
+
+    .token-tray {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      min-height: 24px;
+    }
+
+    .token-pill {
+      display: inline-flex;
+      align-items: center;
+      background: #202020;
+      border: 1px solid #454545;
+      border-radius: 999px;
+      padding: 3px 7px;
+      font-size: 11px;
+      color: #e7e7e7;
+    }
+
+    .token-pill.hot {
+      background: rgba(255, 217, 90, 0.12);
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    .change-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .change-item {
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid #363636;
+      padding: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .change-item strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .few-shot-example {
+      margin-top: 10px;
+    }
+
+    .chat-window {
+      min-height: 240px;
+      max-height: 430px;
+      overflow-y: auto;
+      background: #070707;
+      border: 2px solid rgba(112, 224, 112, 0.55);
+      border-radius: 15px;
+      padding: 12px;
+    }
+
+    .chat-empty {
+      color: var(--muted);
+      line-height: 1.45;
+      padding: 20px 8px;
+      text-align: center;
+    }
+
+    .message {
+      width: fit-content;
+      max-width: 88%;
+      margin: 0 0 10px;
+      border-radius: 15px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .message.user {
+      margin-left: auto;
+      background: #2b5ca9;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      background: #202020;
+      border: 1px solid #3c3c3c;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-role {
+      display: block;
+      margin-bottom: 4px;
+      opacity: 0.72;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .memory-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+      min-height: 27px;
+    }
+
+    .memory-chip {
+      border-radius: 999px;
+      background: rgba(112, 224, 112, 0.08);
+      border: 1px solid rgba(112, 224, 112, 0.5);
+      color: var(--green);
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .footer-note {
+      margin: 8px 0 28px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .version-jump,
+      .capability-grid,
+      .change-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .model-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .version-heading {
+        grid-template-columns: auto 1fr;
+      }
+
+      .era-chip {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+    }
+
+    @media (max-width: 620px) {
+      body {
+        padding: 12px;
+      }
+
+      .compare-row,
+      .version-heading,
+      .capability-grid,
+      .change-list,
+      .version-jump {
+        grid-template-columns: 1fr;
+      }
+
+      .run-all-btn {
+        width: 100%;
+      }
+
+      .version-stage {
+        padding: 12px;
+        border-radius: 20px;
+      }
+
+      .version-badge {
+        min-width: 0;
+        width: 100%;
+        min-height: 52px;
+      }
+
+      .pipeline {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .inside-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
+
   </style>
 </head>
 
@@ -1198,32 +1704,67 @@
 
   <div class="wrap">
     <header>
-      <h1>Tiny AI "Language" Model</h1>
+      <h1>Tiny ChatGPT Evolution Lab</h1>
       <div class="sub">
-        A small language model demo in one HTML file. It learns from text you paste in, then guesses what words should come next.
-        It runs inside your browser only. No internet. No API.
+        Five toy stages in one HTML file: ChatGPT 0, 1, 2, 3 and 3.5. Use the same prompt on every stage and watch it move from blindly joining words to following instructions and holding a simple conversation.
+        Everything runs inside your browser. No internet. No API.
       </div>
 
       <div class="scale-box">
-        <span>Tiny model + tiny text = dumb output</span><br>
-        Bigger model + huge data + training = smarter output.<br>
-        This app is the tiny model version.
+        <span>Same prompt. Five generations.</span><br>
+        Each section adds one major ability, so the improvement is visible instead of hidden behind one magic button.
       </div>
 
       <div class="bro-box">
         <strong>Super simple version:</strong>
-        Blue box = feed the little robot text. Yellow box = tell it how to start.
-        Click <strong>Train + Generate</strong>. Orange box = where its answer comes out.
+        Type one question in the comparison box below, press <strong>Run all versions</strong>, then scroll down through ChatGPT 0 → 3.5.
       </div>
 
       <div class="quick-fix">
-        <strong>Do this:</strong>
-        1. Write/paste text in the blue box.
-        2. Type a few starting words in the yellow box.
-        3. Click <strong>Train + Generate</strong>.
-        That is it. You do not have to separately press Train first anymore.
+        <strong>Important:</strong>
+        These are small educational simulations of the main ideas. They are not OpenAI's private model code and they do not reproduce the real models' intelligence.
       </div>
+
+      <div class="history-note">
+        <strong>Naming note:</strong> The real releases were called GPT-1, GPT-2 and GPT-3. The ChatGPT product arrived later using a GPT-3.5-family model. This page keeps your simple “ChatGPT 0, 1, 2, 3, 3.5” labels so the ladder is easy to follow.
+      </div>
+
+      <nav class="version-jump" aria-label="Jump to a model version">
+        <a href="#chatgpt-0">ChatGPT 0</a>
+        <a href="#chatgpt-1">ChatGPT 1</a>
+        <a href="#chatgpt-2">ChatGPT 2</a>
+        <a href="#chatgpt-3">ChatGPT 3</a>
+        <a href="#chatgpt-35">ChatGPT 3.5</a>
+      </nav>
     </header>
+
+    <section class="compare-console" aria-labelledby="compareTitle">
+      <h2 id="compareTitle">Run one prompt through every version</h2>
+      <p>This copies the same prompt into all five stages. ChatGPT 0 will usually stumble; each later toy stage gains another useful ability.</p>
+      <label for="evolutionPrompt">Shared comparison prompt</label>
+      <div class="compare-row">
+        <input id="evolutionPrompt" value="Explain how a small AI learns from text." />
+        <button class="run-all-btn" type="button" onclick="runAllVersions()">Run all versions ↓</button>
+      </div>
+      <div id="comparisonStatus" class="comparison-status" aria-live="polite"></div>
+    </section>
+
+    <section id="chatgpt-0" class="version-stage v0">
+      <div class="version-heading">
+        <div class="version-badge">0</div>
+        <div>
+          <h2>ChatGPT 0 — the code you supplied</h2>
+          <p>A word-chain machine. It remembers only the last few words and guesses what comes next. It has no attention, instructions, facts or conversation.</p>
+        </div>
+        <div class="era-chip">Invented baseline</div>
+      </div>
+
+      <div class="capability-grid" aria-label="ChatGPT 0 capability levels">
+        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 10%; --meter-color: #d4d4d4"></span></div></div>
+        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 12%; --meter-color: #d4d4d4"></span></div></div>
+        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 0%; --meter-color: #d4d4d4"></span></div></div>
+        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 0%; --meter-color: #d4d4d4"></span></div></div>
+      </div>
 
     <section class="steps-strip">
       <div class="mini-step blue">
@@ -1406,6 +1947,239 @@ Still, with enough text, even a tiny model can sound strangely alive.</textarea>
           It does not understand meaning. It just copies the rhythm of the text you trained it on.
         </div>
       </section>
+    </div>
+    </section>
+
+    <section id="chatgpt-1" class="version-stage v1">
+      <div class="version-heading">
+        <div class="version-badge">1</div>
+        <div>
+          <h2>ChatGPT 1 — learns which words matter</h2>
+          <p>A toy GPT-1-style step. Instead of only looking backward two words, it compares the whole prompt with the training sentences and puts more weight on relevant words.</p>
+        </div>
+        <div class="era-chip">GPT-1 idea · 2018</div>
+      </div>
+
+      <div class="capability-grid" aria-label="ChatGPT 1 capability levels">
+        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 32%; --meter-color: var(--blue)"></span></div></div>
+        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 30%; --meter-color: var(--blue)"></span></div></div>
+        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 8%; --meter-color: var(--blue)"></span></div></div>
+        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 0%; --meter-color: var(--blue)"></span></div></div>
+      </div>
+
+      <div class="change-list">
+        <div class="change-item"><strong>New: token view</strong>The prompt is broken into pieces the model can process.</div>
+        <div class="change-item"><strong>New: attention idea</strong>Prompt words are scored against the full training text.</div>
+        <div class="change-item"><strong>Still weak</strong>It mainly continues text; it is not yet trained to be a helpful assistant.</div>
+      </div>
+
+      <div class="model-layout">
+        <div class="model-panel">
+          <h3>Try ChatGPT 1</h3>
+          <p>It finds the most relevant learned sentence, then uses that sentence as its continuation.</p>
+          <label for="v1Prompt">Prompt</label>
+          <input id="v1Prompt" class="compact-input" value="Explain how a small AI learns from text." />
+          <div class="version-actions">
+            <button type="button" onclick="runVersion1()">Run ChatGPT 1</button>
+            <button class="ghost-btn" type="button" onclick="copyVersionOutput('v1Output')">Copy output</button>
+          </div>
+
+          <div class="pipeline" aria-label="ChatGPT 1 processing pipeline">
+            <div class="pipe-step active" style="--meter-color: var(--blue)"><strong>1. Tokens</strong>Split the prompt</div>
+            <div class="pipe-step active" style="--meter-color: var(--blue)"><strong>2. Attention</strong>Weight key words</div>
+            <div class="pipe-step"><strong>3. Match</strong>Find a pattern</div>
+            <div class="pipe-step"><strong>4. Continue</strong>Predict text</div>
+          </div>
+        </div>
+
+        <div class="model-panel">
+          <h3>Output</h3>
+          <p>Notice that it can stay on topic better, but it may not actually obey the wording of the request.</p>
+          <div id="v1Output" class="model-output" aria-live="polite">Press Run ChatGPT 1.</div>
+          <div class="inside-box">
+            <div class="inside-row"><strong>Prompt tokens</strong><div id="v1Tokens" class="token-tray"></div></div>
+            <div class="inside-row"><strong>Attention focus</strong><div id="v1Focus" class="token-tray"></div></div>
+            <div class="inside-row"><strong>Best learned match</strong><span id="v1Match">—</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="chatgpt-2" class="version-stage v2">
+      <div class="version-heading">
+        <div class="version-badge">2</div>
+        <div>
+          <h2>ChatGPT 2 — larger, longer, more coherent</h2>
+          <p>A toy GPT-2-style step. It combines several relevant patterns, keeps a longer thread and produces a cleaner continuation without needing a special example for every task.</p>
+        </div>
+        <div class="era-chip">GPT-2 idea · 2019</div>
+      </div>
+
+      <div class="capability-grid" aria-label="ChatGPT 2 capability levels">
+        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 52%; --meter-color: var(--purple)"></span></div></div>
+        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 58%; --meter-color: var(--purple)"></span></div></div>
+        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 20%; --meter-color: var(--purple)"></span></div></div>
+        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 4%; --meter-color: var(--purple)"></span></div></div>
+      </div>
+
+      <div class="change-list">
+        <div class="change-item"><strong>More scale</strong>More learned patterns give it more ways to complete the prompt.</div>
+        <div class="change-item"><strong>Longer context</strong>It can combine several related sentences instead of one local word chain.</div>
+        <div class="change-item"><strong>Still a completer</strong>Helpful answers can happen, but “be an assistant” is not yet the main training goal.</div>
+      </div>
+
+      <div class="model-layout">
+        <div class="model-panel">
+          <h3>Try ChatGPT 2</h3>
+          <p>The demo ranks every learned sentence, gathers the strongest group and builds one topic-focused continuation.</p>
+          <label for="v2Prompt">Prompt</label>
+          <input id="v2Prompt" class="compact-input" value="Explain how a small AI learns from text." />
+          <div class="version-actions">
+            <button type="button" onclick="runVersion2()">Run ChatGPT 2</button>
+            <button class="ghost-btn" type="button" onclick="copyVersionOutput('v2Output')">Copy output</button>
+          </div>
+
+          <div class="pipeline" aria-label="ChatGPT 2 processing pipeline">
+            <div class="pipe-step active" style="--meter-color: var(--purple)"><strong>1. Encode</strong>Read full prompt</div>
+            <div class="pipe-step active" style="--meter-color: var(--purple)"><strong>2. Multi-focus</strong>Track several clues</div>
+            <div class="pipe-step active" style="--meter-color: var(--purple)"><strong>3. Combine</strong>Join patterns</div>
+            <div class="pipe-step"><strong>4. Continue</strong>Make a paragraph</div>
+          </div>
+        </div>
+
+        <div class="model-panel">
+          <h3>Output</h3>
+          <p>It should sound more coherent than version 1, though it still treats many requests like text to continue.</p>
+          <div id="v2Output" class="model-output" aria-live="polite">Press Run ChatGPT 2.</div>
+          <div class="inside-box">
+            <div class="inside-row"><strong>Detected topic</strong><div id="v2Topic" class="token-tray"></div></div>
+            <div class="inside-row"><strong>Context used</strong><span id="v2Context">—</span></div>
+            <div class="inside-row"><strong>Model action</strong><span id="v2Action">—</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="chatgpt-3" class="version-stage v3">
+      <div class="version-heading">
+        <div class="version-badge">3</div>
+        <div>
+          <h2>ChatGPT 3 — learns the task from your prompt</h2>
+          <p>A toy GPT-3-style step. It can detect an instruction such as explain, summarise or list, and it can use examples placed inside the prompt as a temporary pattern.</p>
+        </div>
+        <div class="era-chip">GPT-3 idea · 2020</div>
+      </div>
+
+      <div class="capability-grid" aria-label="ChatGPT 3 capability levels">
+        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 72%; --meter-color: var(--orange)"></span></div></div>
+        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 76%; --meter-color: var(--orange)"></span></div></div>
+        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 63%; --meter-color: var(--orange)"></span></div></div>
+        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 20%; --meter-color: var(--orange)"></span></div></div>
+      </div>
+
+      <div class="change-list">
+        <div class="change-item"><strong>In-context learning</strong>Examples in the prompt can demonstrate what kind of answer you want.</div>
+        <div class="change-item"><strong>Task detection</strong>Explain, summarise and list now lead to different output shapes.</div>
+        <div class="change-item"><strong>Not fully aligned</strong>It is powerful, but helpful chat behaviour is still inconsistent without later instruction training.</div>
+      </div>
+
+      <div class="model-layout">
+        <div class="model-panel">
+          <h3>Try ChatGPT 3</h3>
+          <p>Change the instruction word and watch the answer format change. The examples act like temporary lessons.</p>
+          <label for="v3Examples">Examples inside the prompt</label>
+          <textarea id="v3Examples" class="compact-textarea">Input: Summarise: The dog sat in the truck.
+Output: A dog rode in a truck.
+
+Input: Explain: A tiny model predicts words.
+Output: It studies patterns and uses them to guess what comes next.</textarea>
+          <label for="v3Prompt">New task</label>
+          <input id="v3Prompt" class="compact-input" value="Explain how a small AI learns from text." />
+          <div class="version-actions">
+            <button type="button" onclick="runVersion3()">Run ChatGPT 3</button>
+            <button class="ghost-btn" type="button" onclick="copyVersionOutput('v3Output')">Copy output</button>
+          </div>
+        </div>
+
+        <div class="model-panel">
+          <h3>Output</h3>
+          <p>This version tries to do the requested task instead of merely extending the prompt.</p>
+          <div id="v3Output" class="model-output" aria-live="polite">Press Run ChatGPT 3.</div>
+          <div class="inside-box">
+            <div class="inside-row"><strong>Instruction</strong><span id="v3Intent">—</span></div>
+            <div class="inside-row"><strong>Examples found</strong><span id="v3ExampleCount">0</span></div>
+            <div class="inside-row"><strong>Relevant knowledge</strong><span id="v3Knowledge">—</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="chatgpt-35" class="version-stage v35">
+      <div class="version-heading">
+        <div class="version-badge">3.5</div>
+        <div>
+          <h2>ChatGPT 3.5 — trained to be a chat assistant</h2>
+          <p>The final toy stage adds an instruction layer, assistant-style answers, conversation history and a simple memory of what you were discussing.</p>
+        </div>
+        <div class="era-chip">ChatGPT era · 2022</div>
+      </div>
+
+      <div class="capability-grid" aria-label="ChatGPT 3.5 capability levels">
+        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 82%; --meter-color: var(--green)"></span></div></div>
+        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 86%; --meter-color: var(--green)"></span></div></div>
+        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 90%; --meter-color: var(--green)"></span></div></div>
+        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 86%; --meter-color: var(--green)"></span></div></div>
+      </div>
+
+      <div class="change-list">
+        <div class="change-item"><strong>Instruction tuning</strong>It is trained on prompts paired with useful assistant answers.</div>
+        <div class="change-item"><strong>Human preference</strong>Feedback pushes answers toward clear, relevant and safer behaviour.</div>
+        <div class="change-item"><strong>Chat memory</strong>Earlier messages stay in the context so follow-up questions can refer back to them.</div>
+      </div>
+
+      <div class="model-layout">
+        <div class="model-panel">
+          <h3>Assistant controls</h3>
+          <p>The system instruction steers how the assistant should answer. Send a second message such as “make that shorter” to test the conversation memory.</p>
+          <label for="v35System">System instruction</label>
+          <select id="v35System" class="compact-input" onchange="refreshSystemLabel()">
+            <option value="plain" selected>Answer clearly in plain English</option>
+            <option value="brief">Be direct and brief</option>
+            <option value="teacher">Teach it step by step</option>
+            <option value="bro">Use casual, straight-talking language</option>
+          </select>
+
+          <div class="pipeline" aria-label="ChatGPT 3.5 processing pipeline">
+            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>1. System</strong>Read behaviour rule</div>
+            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>2. History</strong>Read earlier chat</div>
+            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>3. Answer</strong>Follow the task</div>
+            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>4. Preference</strong>Make it useful</div>
+          </div>
+
+          <div class="inside-box">
+            <div class="inside-row"><strong>System layer</strong><span id="v35SystemLabel">Clear plain English</span></div>
+            <div class="inside-row"><strong>Messages in context</strong><span id="v35MessageCount">0</span></div>
+            <div class="inside-row"><strong>Remembered topics</strong><div id="v35Memory" class="memory-strip"></div></div>
+          </div>
+        </div>
+
+        <div class="model-panel">
+          <h3>Chat with version 3.5</h3>
+          <div id="v35Chat" class="chat-window" aria-live="polite">
+            <div class="chat-empty">Your conversation will appear here.</div>
+          </div>
+          <label for="v35Prompt" style="margin-top: 11px;">Message</label>
+          <input id="v35Prompt" class="compact-input" value="Explain how a small AI learns from text." onkeydown="handleChatKey(event)" />
+          <div class="version-actions">
+            <button type="button" onclick="runVersion35()">Send message</button>
+            <button class="ghost-btn" type="button" onclick="clearVersion35()">Clear chat</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      This page exaggerates each jump so the core ideas are easy to see. Real GPT models learn through huge neural networks, massive datasets and extensive training—not the small browser rules used in this teaching demo.
     </div>
   </div>
 
@@ -1753,6 +2527,482 @@ The truck stopped near the old house.`;
         "I picked starting words from your blue text: \"" + promptWords + "\"\n\nNow click Train + Generate.";
     }
 
+    /*
+      Evolution stages
+      ----------------
+      These small routines deliberately exaggerate the difference between model
+      generations. They are transparent teaching simulations, not real GPT code.
+    */
+
+    const commonWords = new Set([
+      "a", "an", "and", "are", "as", "at", "be", "because", "but", "by", "can",
+      "do", "does", "for", "from", "had", "has", "have", "how", "i", "if", "in",
+      "into", "is", "it", "its", "like", "me", "my", "of", "on", "or", "our",
+      "so", "that", "the", "their", "them", "then", "there", "this", "to", "was",
+      "we", "were", "what", "when", "where", "which", "who", "why", "will", "with",
+      "would", "you", "your", "explain", "summarise", "summarize", "list", "rewrite"
+    ]);
+
+    const relatedWords = {
+      ai: ["machine", "model", "robot"],
+      artificial: ["machine", "model"],
+      intelligence: ["machine", "model", "understand"],
+      learn: ["learns", "learned", "patterns", "training"],
+      learns: ["learn", "patterns", "training"],
+      learning: ["learn", "patterns", "training"],
+      text: ["words", "sentence", "patterns"],
+      language: ["words", "text", "model"],
+      answer: ["output", "response", "words"],
+      truck: ["road", "passenger", "dog"],
+      dog: ["passenger", "truck", "road"],
+      job: ["gear", "mower", "grass"],
+      work: ["job", "gear", "mower"],
+      mower: ["grass", "edges", "gear"]
+    };
+
+    function normaliseTerm(word) {
+      let clean = String(word || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9']/g, "");
+
+      if (clean.length > 6 && clean.endsWith("ing")) clean = clean.slice(0, -3);
+      if (clean.length > 5 && clean.endsWith("ed")) clean = clean.slice(0, -2);
+      if (clean.length > 4 && clean.endsWith("s")) clean = clean.slice(0, -1);
+      return clean;
+    }
+
+    function plainTokens(text) {
+      return tokenize(text)
+        .map(normaliseTerm)
+        .filter(Boolean);
+    }
+
+    function contentTokens(text) {
+      return plainTokens(text).filter(word => word.length > 2 && !commonWords.has(word));
+    }
+
+    function unique(items) {
+      return Array.from(new Set(items));
+    }
+
+    function learnedSentences() {
+      const text = document.getElementById("corpus").value.trim();
+      if (!text) return [];
+
+      return (text.match(/[^.!?]+[.!?]?/g) || [])
+        .map(sentence => sentence.replace(/\s+/g, " ").trim())
+        .filter(sentence => contentTokens(sentence).length > 0);
+    }
+
+    function expandedPromptTerms(prompt) {
+      const base = unique(contentTokens(prompt));
+      const expanded = base.slice();
+
+      base.forEach(word => {
+        const extras = relatedWords[word] || relatedWords[normaliseTerm(word)] || [];
+        extras.forEach(extra => expanded.push(normaliseTerm(extra)));
+      });
+
+      return unique(expanded);
+    }
+
+    function rankLearnedSentences(prompt) {
+      const sentences = learnedSentences();
+      const promptTerms = expandedPromptTerms(prompt);
+
+      return sentences
+        .map((sentence, index) => {
+          const words = contentTokens(sentence);
+          const wordSet = new Set(words);
+          let score = 0;
+          const matches = [];
+
+          promptTerms.forEach((term, termIndex) => {
+            if (wordSet.has(term)) {
+              score += termIndex < contentTokens(prompt).length ? 4 : 1.6;
+              matches.push(term);
+            }
+          });
+
+          const directPhrase = contentTokens(prompt).slice(0, 3).join(" ");
+          if (directPhrase && sentence.toLowerCase().includes(directPhrase)) score += 5;
+          score += Math.max(0, 1 - index * 0.015);
+
+          return { sentence, index, score, matches: unique(matches), words };
+        })
+        .sort((a, b) => b.score - a.score || a.index - b.index);
+    }
+
+    function renderTokens(elementId, words, hotWords = []) {
+      const tray = document.getElementById(elementId);
+      tray.textContent = "";
+      const hot = new Set(hotWords.map(normaliseTerm));
+
+      if (!words.length) {
+        tray.textContent = "—";
+        return;
+      }
+
+      words.slice(0, 18).forEach(word => {
+        const pill = document.createElement("span");
+        pill.className = "token-pill" + (hot.has(normaliseTerm(word)) ? " hot" : "");
+        pill.textContent = word;
+        tray.appendChild(pill);
+      });
+    }
+
+    function tidySentence(sentence) {
+      const trimmed = String(sentence || "").trim();
+      if (!trimmed) return "";
+      return trimmed.replace(/^./, char => char.toUpperCase()).replace(/([^.!?])$/, "$1.");
+    }
+
+    function runVersion1(customPrompt) {
+      const input = document.getElementById("v1Prompt");
+      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
+      if (typeof customPrompt === "string") input.value = prompt;
+
+      if (!prompt) {
+        document.getElementById("v1Output").textContent = "Type a prompt first.";
+        return;
+      }
+
+      const ranked = rankLearnedSentences(prompt);
+      const best = ranked[0];
+      const tokens = plainTokens(prompt);
+      const promptTerms = contentTokens(prompt);
+      const focus = best ? unique(best.matches.concat(promptTerms)).slice(0, 8) : promptTerms;
+
+      renderTokens("v1Tokens", tokens, focus);
+      renderTokens("v1Focus", focus, focus);
+
+      if (!best) {
+        document.getElementById("v1Output").textContent = "No training text exists in ChatGPT 0's blue box, so this stage has nothing to learn from.";
+        document.getElementById("v1Match").textContent = "No learned sentences";
+        return;
+      }
+
+      document.getElementById("v1Match").textContent = best.sentence;
+      document.getElementById("v1Output").textContent =
+        prompt + "\n\n" + tidySentence(best.sentence);
+    }
+
+    function runVersion2(customPrompt) {
+      const input = document.getElementById("v2Prompt");
+      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
+      if (typeof customPrompt === "string") input.value = prompt;
+
+      if (!prompt) {
+        document.getElementById("v2Output").textContent = "Type a prompt first.";
+        return;
+      }
+
+      const ranked = rankLearnedSentences(prompt);
+      const strongest = ranked
+        .filter((item, index) => index < 3 && (item.score > 1 || index === 0))
+        .sort((a, b) => a.index - b.index);
+      const topic = unique(contentTokens(prompt)).slice(0, 7);
+
+      renderTokens("v2Topic", topic.length ? topic : ["general text"]);
+
+      if (!strongest.length) {
+        document.getElementById("v2Output").textContent = "No training text exists in the blue box.";
+        document.getElementById("v2Context").textContent = "0 sentences";
+        document.getElementById("v2Action").textContent = "Cannot continue";
+        return;
+      }
+
+      const paragraph = unique(strongest.map(item => tidySentence(item.sentence))).join(" ");
+      const contextWordCount = plainTokens(paragraph).length;
+      document.getElementById("v2Output").textContent = prompt + "\n\n" + paragraph;
+      document.getElementById("v2Context").textContent = `${strongest.length} related sentences · ${contextWordCount} words`;
+      document.getElementById("v2Action").textContent = "Build a coherent topic continuation";
+    }
+
+    function detectIntent(prompt) {
+      const lower = prompt.toLowerCase().trim();
+      if (/\b(summarise|summarize|summary|in short|tldr)\b/.test(lower)) return "summarise";
+      if (/\b(list|bullet|steps|name \d+)\b/.test(lower)) return "list";
+      if (/\b(rewrite|reword|say this differently)\b/.test(lower)) return "rewrite";
+      if (/\b(compare|difference|versus|\bvs\b)\b/.test(lower)) return "compare";
+      if (/\b(explain|why|how|teach|what does)\b/.test(lower)) return "explain";
+      if (lower.endsWith("?") || /^(what|when|where|who|is|are|can|does|do)\b/.test(lower)) return "answer";
+      return "continue";
+    }
+
+    function isAiLearningPrompt(prompt) {
+      const terms = new Set(expandedPromptTerms(prompt));
+      return (
+        terms.has("ai") || terms.has("machine") || terms.has("model") ||
+        terms.has("learn") || terms.has("pattern") || terms.has("training")
+      );
+    }
+
+    function relevantFacts(prompt, limit = 3) {
+      return rankLearnedSentences(prompt)
+        .slice(0, limit)
+        .map(item => tidySentence(item.sentence));
+    }
+
+    function buildInstructionAnswer(prompt) {
+      const intent = detectIntent(prompt);
+      const facts = relevantFacts(prompt, 3);
+
+      if (!facts.length) {
+        return "I do not have any training text to work from yet. Add some text to ChatGPT 0's blue box, then try again.";
+      }
+
+      if (isAiLearningPrompt(prompt) && (intent === "explain" || intent === "answer")) {
+        return "A small language AI learns statistical patterns from lots of text. During training, it repeatedly tries to predict missing or next words and adjusts itself when its prediction is wrong. Later, when you type a prompt, it uses those learned patterns to predict a useful sequence of words. More data, more computing power and better training usually make the result more capable, but prediction is not the same thing as human understanding.";
+      }
+
+      if (intent === "summarise") {
+        return "In short: " + facts.slice(0, 2).join(" ");
+      }
+
+      if (intent === "list") {
+        return facts.map((fact, index) => `${index + 1}. ${fact}`).join("\n");
+      }
+
+      if (intent === "rewrite") {
+        return "Rewritten: " + facts[0];
+      }
+
+      if (intent === "compare") {
+        return "The strongest relevant points are:\n\nA: " + facts[0] + "\n\nB: " + (facts[1] || "The training text does not contain a clear second side to compare.");
+      }
+
+      if (intent === "explain") {
+        return "The basic idea is this: " + facts.join(" ");
+      }
+
+      if (intent === "answer") {
+        return "Based on the training text: " + facts.join(" ");
+      }
+
+      return facts.join(" ");
+    }
+
+    function runVersion3(customPrompt) {
+      const input = document.getElementById("v3Prompt");
+      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
+      if (typeof customPrompt === "string") input.value = prompt;
+
+      if (!prompt) {
+        document.getElementById("v3Output").textContent = "Type a task first.";
+        return;
+      }
+
+      const examples = document.getElementById("v3Examples").value;
+      const exampleCount = (examples.match(/^\s*Input:/gim) || []).length;
+      const intent = detectIntent(prompt);
+      const knowledge = rankLearnedSentences(prompt)[0];
+
+      document.getElementById("v3Intent").textContent = intent.charAt(0).toUpperCase() + intent.slice(1);
+      document.getElementById("v3ExampleCount").textContent = String(exampleCount);
+      document.getElementById("v3Knowledge").textContent = knowledge ? knowledge.sentence : "No training text";
+      document.getElementById("v3Output").textContent = buildInstructionAnswer(prompt);
+    }
+
+    let conversation35 = [];
+
+    const systemLabels = {
+      plain: "Clear plain English",
+      brief: "Direct and brief",
+      teacher: "Step-by-step teacher",
+      bro: "Casual and straight-talking"
+    };
+
+    function refreshSystemLabel() {
+      const value = document.getElementById("v35System").value;
+      document.getElementById("v35SystemLabel").textContent = systemLabels[value] || systemLabels.plain;
+    }
+
+    function previousMessage(role, skipLast = 0) {
+      const matches = conversation35.filter(message => message.role === role);
+      return matches[matches.length - 1 - skipLast] || null;
+    }
+
+    function firstSentences(text, count = 2) {
+      const sentences = String(text).match(/[^.!?]+[.!?]?/g) || [String(text)];
+      return sentences.slice(0, count).join(" ").trim();
+    }
+
+    function applyAssistantStyle(answer, style, prompt) {
+      if (style === "brief") {
+        return firstSentences(answer, 2).split(/\s+/).slice(0, 55).join(" ");
+      }
+
+      if (style === "teacher" && isAiLearningPrompt(prompt)) {
+        return "Here is the simple process:\n\n1. Feed the model lots of text.\n2. Hide or shift words and make it predict them.\n3. Compare the prediction with the real text.\n4. Adjust the model so the next prediction is a little better.\n5. Repeat that process a huge number of times.\n\nWhen you later type a prompt, it uses those learned patterns to predict a useful answer.";
+      }
+
+      if (style === "teacher") {
+        const parts = (answer.match(/[^.!?]+[.!?]?/g) || [answer]).slice(0, 4);
+        return "Step by step:\n\n" + parts.map((part, index) => `${index + 1}. ${part.trim()}`).join("\n");
+      }
+
+      if (style === "bro") {
+        return "Straight answer: " + answer.replace(/^A small language AI/, "a small language AI");
+      }
+
+      return answer;
+    }
+
+    function buildChatAnswer(prompt) {
+      const lower = prompt.toLowerCase();
+      const earlierAssistant = previousMessage("assistant");
+      const earlierUser = previousMessage("user", 1);
+      const style = document.getElementById("v35System").value;
+
+      if (/\b(shorter|brief|sum that up|too long)\b/.test(lower) && earlierAssistant) {
+        const shortAnswer = firstSentences(earlierAssistant.text, 1)
+          .split(/\s+/)
+          .slice(0, 28)
+          .join(" ");
+        return style === "bro" ? "Yep — short version: " + shortAnswer : "Short version: " + shortAnswer;
+      }
+
+      if (/what did i (ask|say)|remember my question/.test(lower) && earlierUser) {
+        return `You previously asked: “${earlierUser.text}”`;
+      }
+
+      let workingPrompt = prompt;
+      if (/\b(it|that|this|they|them)\b/.test(lower) && earlierUser) {
+        workingPrompt += " " + earlierUser.text;
+      }
+
+      const answer = buildInstructionAnswer(workingPrompt);
+      return applyAssistantStyle(answer, style, workingPrompt);
+    }
+
+    function renderConversation35() {
+      const chat = document.getElementById("v35Chat");
+      chat.textContent = "";
+
+      if (!conversation35.length) {
+        const empty = document.createElement("div");
+        empty.className = "chat-empty";
+        empty.textContent = "Your conversation will appear here.";
+        chat.appendChild(empty);
+      } else {
+        conversation35.forEach(message => {
+          const bubble = document.createElement("div");
+          bubble.className = "message " + message.role;
+
+          const role = document.createElement("span");
+          role.className = "message-role";
+          role.textContent = message.role === "user" ? "You" : "ChatGPT 3.5";
+
+          const body = document.createElement("span");
+          body.textContent = message.text;
+
+          bubble.appendChild(role);
+          bubble.appendChild(body);
+          chat.appendChild(bubble);
+        });
+
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      document.getElementById("v35MessageCount").textContent = String(conversation35.length);
+      renderMemory35();
+    }
+
+    function renderMemory35() {
+      const tray = document.getElementById("v35Memory");
+      tray.textContent = "";
+      const counts = new Map();
+
+      conversation35
+        .filter(message => message.role === "user")
+        .flatMap(message => contentTokens(message.text))
+        .forEach(word => counts.set(word, (counts.get(word) || 0) + 1));
+
+      const topics = Array.from(counts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(item => item[0]);
+
+      if (!topics.length) {
+        tray.textContent = "Nothing yet";
+        return;
+      }
+
+      topics.forEach(topic => {
+        const chip = document.createElement("span");
+        chip.className = "memory-chip";
+        chip.textContent = topic;
+        tray.appendChild(chip);
+      });
+    }
+
+    function runVersion35(customPrompt, resetFirst = false) {
+      const input = document.getElementById("v35Prompt");
+      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
+      if (typeof customPrompt === "string") input.value = prompt;
+      if (!prompt) return;
+
+      if (resetFirst) conversation35 = [];
+
+      conversation35.push({ role: "user", text: prompt });
+      const answer = buildChatAnswer(prompt);
+      conversation35.push({ role: "assistant", text: answer });
+      renderConversation35();
+      refreshSystemLabel();
+
+      if (typeof customPrompt !== "string") input.value = "";
+    }
+
+    function clearVersion35() {
+      conversation35 = [];
+      document.getElementById("v35Prompt").value = "";
+      renderConversation35();
+    }
+
+    function handleChatKey(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runVersion35();
+      }
+    }
+
+    async function copyVersionOutput(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        document.getElementById("comparisonStatus").textContent = "Output copied.";
+      } catch (error) {
+        document.getElementById("comparisonStatus").textContent = "Copy was blocked by the browser. You can highlight the output manually.";
+      }
+    }
+
+    function runAllVersions() {
+      const shared = document.getElementById("evolutionPrompt");
+      const prompt = shared.value.trim();
+
+      if (!prompt) {
+        document.getElementById("comparisonStatus").textContent = "Type a comparison prompt first.";
+        shared.focus();
+        return;
+      }
+
+      document.getElementById("prompt").value = prompt;
+      document.getElementById("v1Prompt").value = prompt;
+      document.getElementById("v2Prompt").value = prompt;
+      document.getElementById("v3Prompt").value = prompt;
+      document.getElementById("v35Prompt").value = prompt;
+
+      generateText();
+      runVersion1(prompt);
+      runVersion2(prompt);
+      runVersion3(prompt);
+      runVersion35(prompt, true);
+
+      document.getElementById("comparisonStatus").textContent =
+        "Done — the same prompt has now run through ChatGPT 0, 1, 2, 3 and 3.5.";
+    }
+
     function openHelp() {
       document.getElementById("helpBackdrop").classList.add("show");
     }
@@ -1773,7 +3023,8 @@ The truck stopped near the old house.`;
       }
     });
 
-    trainModel();
+    refreshSystemLabel();
+    runAllVersions();
   </script>
 </body>
 </html>
