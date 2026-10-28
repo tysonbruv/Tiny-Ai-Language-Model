@@ -1,1822 +1,588 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-AU">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tiny ChatGPT Evolution Lab</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="description" content="A simple playground for understanding how tiny language models work. Five stages, one step at a time.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Tiny AI">
+  <title>Tiny AI — one step at a time</title>
+  <!-- Restore appearance before the first paint, so dark mode stays dark on reload. -->
+  <script>
+    try {
+      const theme = localStorage.getItem("tiny-ai-theme") === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = theme;
+      document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#101113" : "#f5f5f7";
+    } catch { /* Keep the default light theme when storage is unavailable. */ }
+  </script>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjMwIiBmaWxsPSIjMWQxZDFmIi8+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQyIDg1VjQ0TTQyIDQ0bDQ0IDQxTTg2IDg1VjQ0Ii8+PC9nPjxjaXJjbGUgY3g9IjQyIiBjeT0iNDQiIHI9IjgiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI0MiIgY3k9Ijg1IiByPSI4IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iODYiIGN5PSI0NCIgcj0iOCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iODUiIHI9IjgiIGZpbGw9IiNmZmYiLz48L3N2Zz4K" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAD1klEQVR4nO3dTW7bMBSFUbboNuJm/6sqspIOXLSu/6VLW4/UOcMgAz/qoyBbjvLt4+Nng7W+b/0CGJuAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIjIj61fwBpfX78uf3g4fL77dWTmmOLbWP/2++qinxriAMwxxdEwAT1c9FNlD8AcU5wa4xpo0bqv+P33mGOKMwMEtG4dq63+HFNcqh5QsoJ1Vn+OKa6qHhDFlQ4o33wVtu8cU9xSOiDqqxtQr2237fadY4o76gbEEAREREBEBEREQEQERKRuQL3uRW97T3uOKe6oG1AvZT9BmUPpgHptu20byqcoe/ppxQPqyHnoRaoH1HHzbdhQMkXl00+rH1Dbd0PF62lDBNT22lD9etpAX6o/6nX4tz02M/1VxhhnoCc9v+6Vr6kHqqdNFlCbpaGBzBZQ09B7TRhQ09AbzRlQW9iQjFabNqC28GpUQ+vMHFDT0OtNHlDT0IvNH1DT0CvtIqCmoZfZS0BNQ6+xo4Baa4fDp4+I+tpXQEca6miPATUN9bPTgJqGOtlvQE1DPew6oOaWWWzvATVv7zMCak1DAQH9oaF1BPSPhlYQ0H80tJSAzmloEQFd4ZbZ8wR0k4aeIaB7NPSQgB7Q0H0CekxDdwjoKW6Z3SKgZ3l7f5WAFtDQJQEto6EzAlpMQ6cEtIaG/hLQSho6EtB6bpk1AeV23pCAOthzQ1MFNMQzoB++yLEiG+Y50YuWdasn5fY99kM873eMM9DSA7PVJu57yIc4FQ0Q0Lp11NB7VA8oWUENvUH1gAY1xOVLF6UDyjffEO/LHqp8Eiod0Oj2cB6qG1CvbVd5+z6v7BR1A2IIAiIiICICIiIgIgIiUjegXh+ibPthzBxT3FE3IIZQOqB821XYuHNMcUvpgKivekDJ5quzceeY4qrqAbW1K1ht3eeY4tIAAbXl61hz3eeY4swwX6o/enhTeohFn2OKo8ECOrp6AAZa9KM5phgyIOoY4xqIsgREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEfgPn9y1SAxwl8wAAAABJRU5ErkJggg==">
   <style>
-    :root {
-      --bg: #0b0b0b;
-      --panel: #171717;
-      --text: #f3f3f3;
-      --muted: #b8b8b8;
-      --line: #303030;
-
-      --blue: #4da3ff;
-      --purple: #b47cff;
-      --green: #70e070;
-      --yellow: #ffd95a;
-      --orange: #ff9b4d;
-      --red: #ff6b6b;
-      --cyan: #62dff6;
-      --pink: #ff7ebb;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(77, 163, 255, 0.14), transparent 28%),
-        radial-gradient(circle at top right, rgba(255, 217, 90, 0.12), transparent 28%),
-        #090909;
-      color: var(--text);
-      min-height: 100vh;
-      padding: 22px;
-    }
-
-    .wrap {
-      max-width: 1180px;
-      margin: 0 auto;
-    }
-
-    header {
-      margin-bottom: 16px;
-      background: rgba(23, 23, 23, 0.9);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 20px;
-    }
-
-    @media (min-width: 1000px) {
-      header {
-        padding-right: 360px;
-      }
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 34px;
-      letter-spacing: -0.05em;
-    }
-
-    .sub {
-      color: var(--muted);
-      line-height: 1.45;
-      max-width: 900px;
-      font-size: 16px;
-    }
-
-    .bro-box {
-      margin-top: 14px;
-      background: #050505;
-      border: 2px solid var(--yellow);
-      border-radius: 18px;
-      padding: 14px;
-      font-size: 18px;
-      line-height: 1.45;
-    }
-
-    .bro-box strong {
-      color: var(--yellow);
-    }
-
-    .scale-box {
-      margin-top: 14px;
-      background: rgba(112, 224, 112, 0.08);
-      border: 2px solid var(--green);
-      border-radius: 18px;
-      padding: 14px;
-      font-size: 20px;
-      line-height: 1.45;
-      font-weight: 900;
-    }
-
-    .scale-box span {
-      color: var(--green);
-    }
-
-    .steps-strip {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    @media (max-width: 900px) {
-      .steps-strip {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .mini-step {
-      border-radius: 16px;
-      padding: 12px;
-      background: #151515;
-      border: 2px solid var(--line);
-      min-height: 90px;
-    }
-
-    .mini-step .num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      font-weight: bold;
-      color: #111;
-      margin-bottom: 8px;
-    }
-
-    .mini-step strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 15px;
-    }
-
-    .mini-step span {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-
-    .blue { border-color: var(--blue); }
-    .purple { border-color: var(--purple); }
-    .green { border-color: var(--green); }
-    .yellow { border-color: var(--yellow); }
-    .orange { border-color: var(--orange); }
-
-    .blue .num, .title-blue { background: var(--blue); }
-    .purple .num, .title-purple { background: var(--purple); }
-    .green .num, .title-green { background: var(--green); }
-    .yellow .num, .title-yellow { background: var(--yellow); }
-    .orange .num, .title-orange { background: var(--orange); }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 900px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: rgba(23, 23, 23, 0.96);
-      border-radius: 22px;
-      padding: 16px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
-      border: 2px solid var(--line);
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .section-title .big-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      color: #111;
-      font-weight: 900;
-      font-size: 22px;
-      flex: 0 0 auto;
-    }
-
-    .section-title h2 {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: -0.03em;
-    }
-
-    .section-title p {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    textarea,
-    input,
-    select {
-      width: 100%;
-      background: #070707;
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 13px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 285px;
-      resize: vertical;
-      line-height: 1.45;
-      border-width: 2px;
-      border-color: rgba(77, 163, 255, 0.65);
-    }
-
-    input#prompt {
-      border-width: 2px;
-      border-color: rgba(255, 217, 90, 0.75);
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    textarea:focus,
-    input:focus,
-    select:focus {
-      border-color: white;
-    }
-
-    .settings-box {
-      margin-top: 12px;
-      border: 2px solid rgba(180, 124, 255, 0.75);
-      border-radius: 18px;
-      padding: 12px;
-      background: rgba(180, 124, 255, 0.08);
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    @media (max-width: 900px) {
-      .row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .actions-box {
-      margin-top: 12px;
-      border: 2px solid rgba(112, 224, 112, 0.75);
-      border-radius: 18px;
-      padding: 12px;
-      background: rgba(112, 224, 112, 0.07);
-    }
-
-    button {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 16px;
-      font-weight: 900;
-      cursor: pointer;
-      transition: transform 0.08s ease, opacity 0.15s ease;
-      font-size: 15px;
-    }
-
-    button:hover {
-      opacity: 0.92;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    .train-btn {
-      background: var(--green);
-      color: #111;
-    }
-
-    .generate-btn {
-      background: var(--yellow);
-      color: #111;
-    }
-
-    .predict-btn {
-      background: var(--orange);
-      color: #111;
-    }
-
-    .secondary {
-      background: #2d2d2d;
-      color: var(--text);
-      border: 1px solid #444;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .stat {
-      background: #0d0d0d;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 22px;
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    #output {
-      white-space: pre-wrap;
-      min-height: 285px;
-      background: #070707;
-      border: 2px solid rgba(255, 155, 77, 0.75);
-      border-radius: 14px;
-      padding: 14px;
-      line-height: 1.55;
-      font-size: 16px;
-    }
-
-    .status {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .status.good {
-      color: var(--green);
-    }
-
-    .status.bad {
-      color: var(--red);
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 9px;
-      line-height: 1.45;
-    }
-
-    .plain-help {
-      margin-top: 12px;
-      background: #050505;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 14px;
-    }
-
-    .plain-help strong {
-      color: var(--text);
-    }
-
-    .training-data-note {
-      margin-bottom: 12px;
-      background: rgba(77, 163, 255, 0.10);
-      border: 2px solid var(--blue);
-      border-radius: 18px;
-      padding: 14px;
-      line-height: 1.45;
-      font-size: 16px;
-    }
-
-    .training-data-note strong {
-      color: var(--blue);
-    }
-
-    code {
-      background: #050505;
-      padding: 2px 5px;
-      border-radius: 5px;
-      border: 1px solid #333;
-    }
-
-    .tag {
-      display: inline-block;
-      color: #111;
-      font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 999px;
-      margin-right: 6px;
-      font-size: 12px;
-    }
-
-    .quick-fix {
-      margin-top: 12px;
-      background: rgba(255, 217, 90, 0.09);
-      border: 2px solid var(--yellow);
-      border-radius: 18px;
-      padding: 12px;
-      line-height: 1.45;
-      font-size: 15px;
-    }
-
-    .quick-fix strong {
-      color: var(--yellow);
-    }
-
-    .help-button {
-      position: fixed;
-      top: 18px;
-      right: 18px;
-      width: 54px;
-      height: 54px;
-      border-radius: 999px;
-      background: var(--yellow);
-      color: #111;
-      font-size: 30px;
-      font-weight: 900;
-      border: 3px solid #fff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
-      z-index: 50;
-      cursor: pointer;
-    }
-
-    .help-button:hover {
-      opacity: 1;
-      transform: scale(1.04);
-    }
-
-    .help-callout {
-      position: fixed;
-      top: 74px;
-      right: 18px;
-      max-width: 285px;
-      background: #050505;
-      color: var(--text);
-      border: 2px solid var(--yellow);
-      border-radius: 16px;
-      padding: 10px 13px;
-      z-index: 49;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.38);
-      cursor: pointer;
-      line-height: 1.25;
-      font-size: 15px;
-      font-weight: 900;
-    }
-
-    .help-callout span {
-      color: var(--yellow);
-    }
-
-    .help-callout:hover {
-      transform: scale(1.02);
-    }
-
-    .help-callout::after {
-      content: "";
-      position: absolute;
-      top: -10px;
-      right: 24px;
-      width: 16px;
-      height: 16px;
-      background: #050505;
-      border-top: 2px solid var(--yellow);
-      border-left: 2px solid var(--yellow);
-      transform: rotate(45deg);
-    }
-
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.78);
-      z-index: 100;
-      padding: 18px;
-      overflow-y: auto;
-    }
-
-    .modal-backdrop.show {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-
-    .help-modal {
-      width: min(760px, 100%);
-      margin: 40px auto;
-      background: #111;
-      border: 3px solid var(--yellow);
-      border-radius: 24px;
-      padding: 18px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-    }
-
-    .help-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .help-head h2 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.04em;
-    }
-
-    .close-help {
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      background: #2d2d2d;
-      color: #fff;
-      border: 1px solid #555;
-      font-size: 24px;
-      line-height: 1;
-      padding: 0;
-      flex: 0 0 auto;
-    }
-
-    .goal-box {
-      background: #050505;
-      border: 2px solid var(--yellow);
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 14px;
-      font-size: 17px;
-      line-height: 1.45;
-    }
-
-    .goal-box strong {
-      color: var(--yellow);
-    }
-
-    .help-step {
-      display: grid;
-      grid-template-columns: 54px 1fr;
-      gap: 12px;
-      background: #050505;
-      border: 2px solid var(--line);
-      border-radius: 18px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .help-step-num {
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #111;
-      font-size: 22px;
-      font-weight: 900;
-    }
-
-    .help-step h3 {
-      margin: 0 0 5px;
-      font-size: 19px;
-    }
-
-    .help-step p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 15px;
-    }
-
-    .help-example {
-      background: rgba(112, 224, 112, 0.08);
-      border: 2px solid var(--green);
-      border-radius: 18px;
-      padding: 14px;
-      margin-top: 14px;
-      line-height: 1.5;
-    }
-
-    .help-example strong {
-      color: var(--green);
-    }
-
-    .help-bottom-note {
-      background: rgba(255, 107, 107, 0.08);
-      border: 2px solid var(--red);
-      border-radius: 18px;
-      padding: 14px;
-      margin-top: 14px;
-      line-height: 1.5;
-      color: var(--muted);
-    }
-
-    .help-bottom-note strong {
-      color: var(--red);
-    }
-
-    @media (max-width: 700px) {
-      .help-button {
-        width: 48px;
-        height: 48px;
-        font-size: 26px;
-        top: 12px;
-        right: 12px;
-      }
-
-      .help-callout {
-        top: 64px;
-        right: 12px;
-        left: 12px;
-        max-width: none;
-        text-align: center;
-      }
-
-      .help-callout::after {
-        display: none;
-      }
-
-      .help-modal {
-        margin-top: 118px;
-      }
-
-      .help-step {
-        grid-template-columns: 1fr;
-      }
-    }
-
-
-    .mega-tip {
-      background: #050505;
-      border: 2px solid var(--purple);
-      border-radius: 18px;
-      padding: 14px;
-      margin-top: 14px;
-      line-height: 1.5;
-      color: var(--muted);
-    }
-
-    .mega-tip strong {
-      color: var(--purple);
-    }
-
-    .mega-tip h3 {
-      color: var(--yellow);
-      margin: 18px 0 8px;
-      font-size: 20px;
-    }
-
-    .mega-tip h3:first-child {
-      margin-top: 0;
-    }
-
-    .mega-tip p {
-      margin: 0 0 10px;
-    }
-
-    .mega-tip ul,
-    .mega-tip ol {
-      margin: 8px 0 12px;
-      padding-left: 22px;
-    }
-
-    .mega-tip li {
-      margin-bottom: 6px;
-    }
-
-    .simple-quote {
-      background: #101010;
-      border-left: 4px solid var(--green);
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin: 10px 0;
-      color: var(--text);
-    }
-
-    .history-note {
-      margin-top: 14px;
-      background: rgba(98, 223, 246, 0.08);
-      border: 2px solid var(--cyan);
-      border-radius: 18px;
-      padding: 14px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .history-note strong {
-      color: var(--cyan);
-    }
-
-    .version-jump {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .version-jump a {
-      display: block;
-      color: var(--text);
-      text-decoration: none;
-      text-align: center;
-      background: #0b0b0b;
-      border: 1px solid #424242;
-      border-radius: 12px;
-      padding: 10px 8px;
-      font-size: 13px;
-      font-weight: 900;
-    }
-
-    .version-jump a:hover,
-    .version-jump a:focus {
-      border-color: var(--yellow);
-      outline: none;
-    }
-
-    .compare-console {
-      margin: 0 0 22px;
-      padding: 18px;
-      border-radius: 22px;
-      background: linear-gradient(135deg, rgba(98, 223, 246, 0.11), rgba(180, 124, 255, 0.10));
-      border: 2px solid var(--cyan);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .compare-console h2 {
-      margin: 0 0 5px;
-      font-size: 24px;
-    }
-
-    .compare-console p {
-      margin: 0 0 12px;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .compare-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    #evolutionPrompt {
-      border: 2px solid var(--cyan);
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .run-all-btn {
-      background: var(--cyan);
-      color: #071014;
-      min-width: 190px;
-    }
-
-    .comparison-status {
-      min-height: 20px;
-      margin-top: 9px;
-      color: var(--green);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .version-stage {
-      position: relative;
-      margin: 0 0 26px;
-      padding: 18px;
-      border: 2px solid #383838;
-      border-radius: 26px;
-      background: rgba(13, 13, 13, 0.88);
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
-      scroll-margin-top: 18px;
-    }
-
-    .version-stage.v0 { border-color: #727272; }
-    .version-stage.v1 { border-color: var(--blue); }
-    .version-stage.v2 { border-color: var(--purple); }
-    .version-stage.v3 { border-color: var(--orange); }
-    .version-stage.v35 { border-color: var(--green); }
-
-    .version-heading {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 14px;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #393939;
-    }
-
-    .version-badge {
-      min-width: 90px;
-      min-height: 76px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 18px;
-      color: #090909;
-      font-size: 27px;
-      line-height: 1;
-      font-weight: 1000;
-      padding: 12px;
-    }
-
-    .v0 .version-badge { background: #d4d4d4; }
-    .v1 .version-badge { background: var(--blue); }
-    .v2 .version-badge { background: var(--purple); }
-    .v3 .version-badge { background: var(--orange); }
-    .v35 .version-badge { background: var(--green); }
-
-    .version-heading h2 {
-      margin: 0 0 5px;
-      font-size: 27px;
-      letter-spacing: -0.035em;
-    }
-
-    .version-heading p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .era-chip {
-      align-self: start;
-      white-space: nowrap;
-      border: 1px solid #454545;
-      background: #080808;
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .capability-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin: 0 0 15px;
-    }
-
-    .capability {
-      background: #080808;
-      border: 1px solid #333;
-      border-radius: 13px;
-      padding: 10px;
-    }
-
-    .capability strong {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 12px;
-    }
-
-    .meter {
-      height: 7px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: #262626;
-    }
-
-    .meter span {
-      display: block;
-      height: 100%;
-      width: var(--value);
-      background: var(--meter-color, var(--cyan));
-      border-radius: inherit;
-    }
-
-    .model-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-      gap: 14px;
-    }
-
-    .model-panel {
-      min-width: 0;
-      background: #151515;
-      border: 1px solid #363636;
-      border-radius: 18px;
-      padding: 14px;
-    }
-
-    .model-panel h3 {
-      margin: 0 0 5px;
-      font-size: 18px;
-    }
-
-    .model-panel > p {
-      margin: 0 0 12px;
-      color: var(--muted);
-      line-height: 1.42;
-      font-size: 14px;
-    }
-
-    .pipeline {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      margin: 12px 0;
-    }
-
-    .pipe-step {
-      position: relative;
-      min-height: 72px;
-      border-radius: 12px;
-      border: 1px solid #404040;
-      background: #090909;
-      padding: 9px;
-      text-align: center;
-      font-size: 12px;
-      line-height: 1.3;
-      color: var(--muted);
-    }
-
-    .pipe-step strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 5px;
-      font-size: 13px;
-    }
-
-    .pipe-step.active {
-      border-color: var(--meter-color, var(--cyan));
-      box-shadow: inset 0 0 20px color-mix(in srgb, var(--meter-color, var(--cyan)) 10%, transparent);
-    }
-
-    .compact-input,
-    textarea.compact-textarea,
-    select.compact-input {
-      min-height: 0;
-      border: 2px solid #515151;
-    }
-
-    textarea.compact-textarea {
-      min-height: 112px;
-      font-size: 14px;
-    }
-
-    .version-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 9px;
-    }
-
-    .version-actions button {
-      background: #ededed;
-      color: #111;
-    }
-
-    .version-actions .ghost-btn {
-      background: #292929;
-      color: var(--text);
-      border: 1px solid #484848;
-    }
-
-    .model-output {
-      min-height: 144px;
-      white-space: pre-wrap;
-      background: #070707;
-      border: 2px solid #414141;
-      border-radius: 14px;
-      padding: 13px;
-      font-size: 15px;
-      line-height: 1.55;
-    }
-
-    .inside-box {
-      margin-top: 10px;
-      background: #080808;
-      border: 1px solid #333;
-      border-radius: 14px;
-      padding: 11px;
-    }
-
-    .inside-row {
-      display: grid;
-      grid-template-columns: 112px 1fr;
-      gap: 10px;
-      padding: 7px 0;
-      border-bottom: 1px solid #272727;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
-    .inside-row:last-child {
-      border-bottom: 0;
-    }
-
-    .inside-row strong {
-      color: var(--muted);
-    }
-
-    .token-tray {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      min-height: 24px;
-    }
-
-    .token-pill {
-      display: inline-flex;
-      align-items: center;
-      background: #202020;
-      border: 1px solid #454545;
-      border-radius: 999px;
-      padding: 3px 7px;
-      font-size: 11px;
-      color: #e7e7e7;
-    }
-
-    .token-pill.hot {
-      background: rgba(255, 217, 90, 0.12);
-      border-color: var(--yellow);
-      color: var(--yellow);
-    }
-
-    .change-list {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 0 0 14px;
-    }
-
-    .change-item {
-      border-radius: 13px;
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid #363636;
-      padding: 10px;
-      font-size: 13px;
-      line-height: 1.4;
-      color: var(--muted);
-    }
-
-    .change-item strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .few-shot-example {
-      margin-top: 10px;
-    }
-
-    .chat-window {
-      min-height: 240px;
-      max-height: 430px;
-      overflow-y: auto;
-      background: #070707;
-      border: 2px solid rgba(112, 224, 112, 0.55);
-      border-radius: 15px;
-      padding: 12px;
-    }
-
-    .chat-empty {
-      color: var(--muted);
-      line-height: 1.45;
-      padding: 20px 8px;
-      text-align: center;
-    }
-
-    .message {
-      width: fit-content;
-      max-width: 88%;
-      margin: 0 0 10px;
-      border-radius: 15px;
-      padding: 10px 12px;
-      white-space: pre-wrap;
-      line-height: 1.45;
-      font-size: 14px;
-    }
-
-    .message.user {
-      margin-left: auto;
-      background: #2b5ca9;
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-
-    .message.assistant {
-      background: #202020;
-      border: 1px solid #3c3c3c;
-      border-bottom-left-radius: 4px;
-    }
-
-    .message-role {
-      display: block;
-      margin-bottom: 4px;
-      opacity: 0.72;
-      font-size: 10px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .memory-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 9px;
-      min-height: 27px;
-    }
-
-    .memory-chip {
-      border-radius: 999px;
-      background: rgba(112, 224, 112, 0.08);
-      border: 1px solid rgba(112, 224, 112, 0.5);
-      color: var(--green);
-      padding: 4px 8px;
-      font-size: 11px;
-    }
-
-    .footer-note {
-      margin: 8px 0 28px;
-      text-align: center;
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 13px;
-    }
-
-    @media (max-width: 900px) {
-      .version-jump,
-      .capability-grid,
-      .change-list {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .model-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .version-heading {
-        grid-template-columns: auto 1fr;
-      }
-
-      .era-chip {
-        grid-column: 1 / -1;
-        justify-self: start;
-      }
-    }
-
-    @media (max-width: 620px) {
-      body {
-        padding: 12px;
-      }
-
-      .compare-row,
-      .version-heading,
-      .capability-grid,
-      .change-list,
-      .version-jump {
-        grid-template-columns: 1fr;
-      }
-
-      .run-all-btn {
-        width: 100%;
-      }
-
-      .version-stage {
-        padding: 12px;
-        border-radius: 20px;
-      }
-
-      .version-badge {
-        min-width: 0;
-        width: 100%;
-        min-height: 52px;
-      }
-
-      .pipeline {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .inside-row {
-        grid-template-columns: 1fr;
-        gap: 4px;
-      }
-    }
-
-  </style>
+/* Tiny AI: layout, components, then small-screen adjustments. */
+:root {
+  color-scheme: light;
+  --background: #f5f5f7;
+  --surface: #fff;
+  --text: #1d1d1f;
+  --secondary: #6b6b73;
+  --muted: #8a8a93;
+  --line: #e9e9ed;
+  --accent: #0071e3;
+  --accent-hover: #0062c4;
+  --accent-soft: #eef5ff;
+  --radius: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--background); color: var(--text); -webkit-font-smoothing: antialiased; }
+button, input, textarea, select { font: inherit; }
+button, a, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button { cursor: pointer; border: 0; }
+button:disabled { cursor: default; opacity: .35; }
+button, a, textarea, select, input, summary { outline-offset: 4px; }
+:focus-visible { outline: 3px solid #79b6ff; }
+a { color: inherit; text-decoration: none; }
+p, h1, h2, h3 { margin: 0; }
+svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+.app-shell { max-width: 1160px; margin: 0 auto; padding: 0 36px; }
+.topbar { min-height: 94px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e5ea; }
+.brand { display: flex; align-items: center; gap: 11px; font-size: 17px; font-weight: 650; letter-spacing: -.45px; }
+.brand img { border-radius: 9px; }
+.brand-description { display: block; font-size: 10px; font-weight: 450; color: var(--secondary); letter-spacing: .1px; margin-top: 3px; }
+.topbar-actions { display: flex; gap: 23px; align-items: center; }
+.device-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.theme-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 2px 0 2px 6px; border-radius: 7px; background: transparent; color: var(--secondary); font-size: 10px; }
+.theme-toggle:hover { color: var(--text); }
+.theme-toggle svg { width: 12px; height: 12px; }
+.theme-switch { width: 28px; height: 17px; padding: 2px; border-radius: 20px; background: #d4d5dc; transition: background .15s; }
+.theme-switch > span { display: block; width: 13px; height: 13px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px #0002; transition: transform .15s; }
+.theme-toggle[aria-checked="true"] .theme-switch { background: #0071e3; }
+.theme-toggle[aria-checked="true"] .theme-switch > span { transform: translateX(11px); }
+.device-note { font-size: 12px; color: var(--secondary); display: flex; gap: 7px; align-items: center; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: #86868b; }
+.icon-button { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--secondary); border-radius: 11px; font-size: 25px; }
+.icon-button:hover:not(:disabled) { background: #eaeaf0; color: var(--text); }
+.icon-button.small { width: 34px; height: 34px; }
+.icon-button.small svg { width: 17px; height: 17px; }
+.intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding: 46px 0 34px; }
+.eyebrow { font-size: 10px; letter-spacing: 1.5px; font-weight: 650; line-height: 1.5; color: var(--secondary); }
+.intro .eyebrow { margin-bottom: 11px; }
+h1 { font-size: clamp(30px, 3.5vw, 42px); line-height: 1.14; letter-spacing: -1.8px; font-weight: 630; }
+.intro-description { font-size: 14px; color: var(--secondary); line-height: 1.6; margin-top: 12px; }
+.segmented-control { display: flex; flex: 0 0 auto; padding: 4px; border-radius: 11px; background: #e9e9ed; gap: 3px; margin-bottom: 2px; }
+.segmented-control button { min-width: 91px; min-height: 34px; background: transparent; border-radius: 8px; color: var(--secondary); font-size: 12px; font-weight: 550; }
+.segmented-control button[aria-selected="true"] { background: white; color: var(--text); box-shadow: 0 1px 4px #0000000d; }
+.stage-navigation { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 25px; }
+.stage-button { display: flex; align-items: center; text-align: left; gap: 10px; background: transparent; padding: 14px 12px; border-radius: 14px; border: 1px solid transparent; color: var(--secondary); min-width: 0; transition: background .16s, border-color .16s; }
+.stage-button:hover { background: #ededf1; }
+.stage-button[aria-current="step"] { background: white; color: var(--text); border-color: #e3e5eb; box-shadow: 0 2px 8px #00000003; }
+.stage-number { width: 29px; height: 29px; border-radius: 50%; display: grid; place-items: center; background: #e7e7ec; color: #797980; font-size: 11px; font-weight: 650; flex: 0 0 auto; }
+.stage-button[aria-current="step"] .stage-number { background: var(--accent); color: white; }
+.stage-name { display: block; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.stage-caption { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; white-space: nowrap; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 294px; gap: 24px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 5px 24px #11112703; overflow: hidden; }
+.playground-input { padding: 28px 30px 23px; }
+.stage-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.stage-heading .eyebrow { margin-bottom: 7px; }
+h2 { font-size: 23px; font-weight: 620; letter-spacing: -.75px; line-height: 1.25; }
+.model-badge { white-space: nowrap; border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; color: var(--secondary); font-size: 10px; font-weight: 550; align-self: flex-start; margin-top: 3px; }
+.stage-description { font-size: 13px; line-height: 1.6; color: var(--secondary); margin-top: 10px; }
+#prompt-form { margin-top: 25px; }
+label { display: block; font-size: 12px; font-weight: 550; margin-bottom: 9px; color: #494950; }
+textarea, select, input[type="number"] { width: 100%; background: #f7f7f9; color: var(--text); border: 1px solid #ededf1; border-radius: 12px; padding: 14px; font-size: 15px; line-height: 1.55; }
+textarea { display: block; resize: vertical; min-height: 84px; }
+textarea:focus, select:focus, input:focus { border-color: #79b6ff; }
+textarea::placeholder { color: #96969f; }
+#prompt { font-size: 17px; min-height: 87px; }
+.examples { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-top: 11px; }
+.examples > span { font-size: 10px; color: var(--muted); margin-right: 1px; }
+.example-button, .pill-button { background: #f5f5f7; border: 1px solid #eaeaf0; border-radius: 7px; color: var(--secondary); font-size: 10px; padding: 7px 9px; min-height: 29px; }
+.example-button:hover, .pill-button:hover { color: var(--accent); background: var(--accent-soft); border-color: #d8e8ff; }
+.submit-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; }
+.keyboard-hint { font-size: 10px; color: var(--muted); }
+.primary-button { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 25px; padding: 11px 18px; border-radius: 10px; background: var(--accent); color: white; font-size: 12px; line-height: 1.5; font-weight: 550; white-space: nowrap; transition: background .15s, transform .15s; }
+.primary-button:hover { background: var(--accent-hover); }
+.primary-button:active { transform: scale(.98); }
+.primary-button > span[aria-hidden] { font-size: 17px; line-height: 1; font-weight: 400; }
+.secondary-button { min-height: 42px; background: #f0f0f4; color: var(--text); padding: 11px 18px; border-radius: 10px; font-size: 12px; }
+.secondary-button:hover { background: #e7e7ee; }
+.result-section { padding: 18px 30px 23px; border-top: 1px solid var(--line); background: #fdfdfe; min-height: 224px; }
+.result-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.result-toolbar .eyebrow { letter-spacing: 1.3px; font-size: 9px; }
+.result-actions { display: flex; gap: 6px; align-items: center; }
+.result { font-size: 16px; line-height: 1.8; letter-spacing: -.15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.result:has(.empty-result) { white-space: normal; }
+.empty-result { padding: 21px 0 30px; color: #909099; }
+.empty-result strong { font-weight: 450; font-size: 17px; display: block; }
+.empty-result p { font-size: 12px; margin-top: 5px; color: #909099; }
+.result-note { font-size: 11px; line-height: 1.65; color: var(--secondary); background: #f2f3f6; padding: 10px 12px; border-radius: 8px; margin-top: 15px; }
+.result-details { border-top: 1px solid var(--line); margin-top: 22px; }
+summary { list-style: none; cursor: pointer; }
+summary::-webkit-details-marker { display: none; }
+.result-details summary { padding: 14px 0 1px; font-size: 11px; color: var(--secondary); display: flex; justify-content: space-between; align-items: center; }
+.result-details summary > span { font-size: 18px; font-weight: 300; }
+.result-details[open] summary > span { transform: rotate(45deg); }
+dl { margin: 14px 0 0; display: grid; grid-template-columns: 115px minmax(0, 1fr); gap: 11px 16px; font-size: 11px; line-height: 1.65; }
+dt { color: var(--secondary); }
+dd { margin: 0; overflow-wrap: anywhere; }
+.text-button { background: transparent; color: var(--accent); font-size: 11px; padding: 5px 0; line-height: 1.5; }
+.text-button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.prediction-button { margin-top: 14px; display: flex; align-items: center; gap: 13px; }
+.predictions { margin-top: 15px; }
+.prediction-context { color: var(--secondary); font-size: 11px; margin-bottom: 12px; }
+.prediction-row { display: grid; grid-template-columns: 70px 1fr 42px; gap: 14px; align-items: center; margin: 9px 0; font-size: 11px; }
+.prediction-track { height: 5px; background: #eaeff7; border-radius: 4px; overflow: hidden; }
+.prediction-fill { height: 100%; background: #81b7f5; border-radius: inherit; }
+.prediction-row > span:last-child { text-align: right; color: var(--secondary); font-variant-numeric: tabular-nums; }
+.sidebar { min-width: 0; }
+.insight-card { background: #eaf1fb; border: 1px solid #e4ecf9; padding: 23px; border-radius: var(--radius); }
+.concept-visual { height: 91px; display: flex; align-items: center; justify-content: center; gap: 6px; position: relative; margin-bottom: 21px; }
+.visual-word { font-size: 12px; padding: 10px 11px; border-radius: 8px; background: #fff; border: 1px solid #dae5f4; color: #526079; box-shadow: 0 2px 5px #2a558306; }
+.visual-word.emphasis { color: var(--accent); background: #d9e8ff; border-color: #c6ddfb; }
+.visual-arrow { color: #91a5bf; font-size: 18px; margin: 0 2px; }
+.visual-stack { display: flex; flex-direction: column; gap: 6px; width: 155px; }
+.visual-line { height: 8px; background: #cbdcf4; border-radius: 8px; width: 100%; }
+.visual-line:nth-child(2) { width: 76%; }
+.visual-line:nth-child(3) { width: 89%; }
+.visual-line.emphasis { background: #72a7e7; }
+.visual-bubble { border-radius: 11px 11px 3px 11px; background: white; padding: 12px 15px; box-shadow: 0 2px 7px #30558b07; font-size: 11px; color: #5a6a84; }
+.visual-bubble.reply { background: #d7e8ff; border-radius: 11px 11px 11px 3px; margin: 9px 0 0 27px; color: #3374bd; }
+.visual-task { font-size: 12px; color: #52749e; display: flex; flex-direction: column; gap: 9px; }
+.visual-task span { display: flex; gap: 10px; align-items: center; }
+.visual-task i { width: 13px; height: 13px; border-radius: 4px; display: grid; place-items: center; color: var(--accent); background: #d2e4fc; font-size: 10px; font-style: normal; }
+.insight-card .eyebrow { color: #69809f; letter-spacing: 1.2px; font-size: 9px; }
+.insight-card h3 { font-size: 18px; letter-spacing: -.6px; font-weight: 600; line-height: 1.35; margin-top: 8px; }
+.insight-card > p:not(.eyebrow) { color: #586b86; font-size: 13px; line-height: 1.75; margin-top: 10px; }
+.try-tip { display: flex; gap: 10px; align-items: flex-start; border-top: 1px solid #d4e0f1; margin-top: 22px; padding-top: 15px; color: #486689; }
+.try-tip > span { font-size: 17px; line-height: 1.1; }
+.try-tip p { font-size: 11px; line-height: 1.7; }
+.utility-list { margin: 14px 0 19px; padding: 0 5px; }
+.utility-row { display: flex; align-items: center; width: 100%; text-align: left; background: transparent; color: #80808b; gap: 12px; padding: 17px 2px; border-bottom: 1px solid #e5e5eb; }
+.utility-row:hover strong { color: var(--accent); }
+.utility-row > svg { width: 19px; height: 19px; stroke-width: 1.5; }
+.utility-row > span:not(.chevron) { flex: 1; }
+.utility-row strong { display: block; color: #3a3a43; font-size: 12px; font-weight: 550; }
+.utility-row small { display: block; color: var(--secondary); font-size: 10px; margin-top: 5px; }
+.chevron { font-size: 22px; color: #9999a1; font-weight: 300; }
+.stage-pager { display: flex; gap: 9px; align-items: center; }
+.previous-button { border: 1px solid #e2e2e9; border-radius: 10px; width: 39px; height: 39px; font-size: 18px; }
+.next-button { flex: 1; min-height: 39px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: #42424b; background: transparent; padding: 7px 10px; border-radius: 10px; }
+.next-button:hover { background: #eaeaf0; }
+.next-button > span:last-child { color: var(--accent); font-size: 17px; }
+.footer { margin: 33px 0 25px; padding-top: 18px; border-top: 1px solid #e5e5ea; color: #8a8a93; font-size: 10px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.footer > div { display: flex; gap: 18px; }
+.footer .text-button { color: var(--secondary); font-size: 10px; }
+
+/* Compare is a separate view: it never competes with the first experiment. */
+.compare-input { padding: 28px 30px 22px; }
+.compare-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.compare-heading .eyebrow { margin-bottom: 7px; }
+.five-models { font-size: 19px; color: #a6a6b0; font-weight: 400; letter-spacing: -1px; }
+#compare-form { margin-top: 23px; }
+.compare-form-row { display: flex; align-items: center; gap: 14px; }
+.compare-form-row textarea { min-height: 64px; }
+.compare-form-row .primary-button { flex-shrink: 0; }
+.compare-source { margin-top: 12px; }
+.compare-empty { padding: 65px 24px; text-align: center; font-size: 17px; line-height: 1.9; color: var(--secondary); }
+.compare-empty > span { font-size: 12px; color: var(--muted); }
+.compare-results-list { display: flex; flex-direction: column; gap: 12px; margin-top: 19px; }
+.comparison-card { display: grid; grid-template-columns: 168px minmax(0, 1fr); padding: 23px 26px; gap: 25px; }
+.comparison-model { display: flex; flex-direction: column; align-items: flex-start; }
+.comparison-model .model-badge { margin: 0 0 9px; }
+.comparison-model h3 { font-size: 13px; font-weight: 600; }
+.comparison-model p { font-size: 10px; color: var(--secondary); line-height: 1.6; margin-top: 5px; }
+.comparison-output { white-space: pre-wrap; font-size: 13px; line-height: 1.9; overflow-wrap: anywhere; }
+.comparison-note { font-size: 10px; color: var(--secondary); margin-top: 9px; line-height: 1.6; }
+.comparison-open { margin-top: auto; padding-top: 12px; }
+
+/* Native dialogs give keyboard focus, Escape handling and background isolation. */
+.sheet { color: var(--text); width: min(620px, calc(100% - 40px)); border: 1px solid #e8e8ee; border-radius: 25px; padding: 28px; background: #fff; max-height: 88dvh; overflow-y: auto; box-shadow: 0 25px 100px #0b173b24; }
+.sheet::backdrop { background: #1c23384a; backdrop-filter: blur(5px); }
+.sheet-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.sheet-header .eyebrow { margin-bottom: 7px; }
+.sheet-header .icon-button { margin: -5px -8px 0 0; font-size: 26px; font-weight: 300; }
+.sheet-description { font-size: 13px; color: var(--secondary); margin: 14px 0 21px; line-height: 1.7; }
+.preset-row { display: flex; gap: 8px; margin-bottom: 20px; }
+.pill-button { font-size: 11px; min-height: 34px; padding: 7px 12px; }
+.preset-row .text-button { margin-left: auto; color: var(--secondary); }
+#source-text { font-size: 13px; line-height: 1.8; }
+.source-count { display: flex; justify-content: space-between; gap: 10px; color: var(--secondary); font-size: 10px; margin: 10px 0 0; }
+.source-reset-note { color: var(--secondary); font-size: 11px; line-height: 1.6; margin-top: 13px; }
+.sheet-footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--line); }
+#reset-settings { margin-right: auto; }
+#settings-fields { margin-top: 25px; }
+.setting-field { margin: 22px 0; }
+.setting-field > p { font-size: 11px; line-height: 1.7; color: var(--secondary); margin: 7px 0 0; }
+.setting-field select, .setting-field input[type="number"] { font-size: 13px; }
+.setting-label { display: flex; align-items: center; justify-content: space-between; }
+.setting-label output { font-size: 12px; color: var(--accent); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.range-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--secondary); margin-top: 5px; }
+.help-steps { list-style: none; counter-reset: help-step; padding: 0; margin: 25px 0; display: flex; flex-direction: column; gap: 23px; }
+.help-steps li { counter-increment: help-step; position: relative; padding-left: 43px; }
+.help-steps li::before { content: counter(help-step); position: absolute; left: 0; top: 0; width: 27px; height: 27px; background: #edf4ff; color: var(--accent); border-radius: 50%; display: grid; place-items: center; font-size: 11px; }
+.help-steps strong { display: block; font-size: 14px; font-weight: 550; }
+.help-steps span { display: block; font-size: 12px; line-height: 1.7; color: var(--secondary); margin-top: 5px; }
+.honesty-note { background: #f6f6f8; padding: 17px; border-radius: 12px; }
+.honesty-note strong { font-size: 12px; font-weight: 550; }
+.honesty-note p, .help-details p { font-size: 11px; color: var(--secondary); line-height: 1.8; margin-top: 7px; }
+.help-details { margin-top: 20px; }
+.help-details summary { font-size: 12px; color: var(--accent); }
+.field-error { font-size: 12px; line-height: 1.6; color: #af3535; margin-top: 10px; }
+.toast { position: fixed; bottom: max(25px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); border-radius: 12px; padding: 12px 18px; background: #29292e; color: white; box-shadow: 0 8px 30px #0002; font-size: 12px; z-index: 20; width: max-content; max-width: calc(100% - 32px); line-height: 1.6; }
+.skip-link { position: fixed; top: -100px; left: 20px; padding: 10px 15px; background: var(--text); color: white; border-radius: 8px; z-index: 30; }
+.skip-link:focus { top: 10px; }
+.noscript { padding: 30px; font-size: 16px; line-height: 1.7; }
+.chat-log { display: flex; flex-direction: column; gap: 16px; max-height: 390px; overflow-y: auto; white-space: normal; padding-right: 4px; }
+.chat-message { padding: 12px 15px; border-radius: 12px; background: #f1f1f5; font-size: 13px; white-space: pre-wrap; line-height: 1.8; align-self: flex-start; max-width: 94%; overflow-wrap: anywhere; }
+.chat-message.user { background: #e9f2ff; align-self: flex-end; }
+.chat-message .chat-role { display: block; font-size: 9px; font-weight: 600; color: var(--secondary); margin-bottom: 5px; }
+
+@media (min-width: 1400px) { .intro { padding-top: 58px; } }
+@media (max-width: 950px) {
+  .app-shell { padding: 0 25px; }
+  .workspace { grid-template-columns: minmax(0, 1fr) 255px; gap: 18px; }
+  .playground-input, .result-section { padding-left: 23px; padding-right: 23px; }
+  .stage-button { padding: 12px 8px; gap: 7px; }
+  .stage-caption { display: none; }
+  .insight-card { padding: 20px; }
+  .keyboard-hint { font-size: 9px; }
+  .model-badge { display: none; }
+  .comparison-model .model-badge { display: inline-block; }
+}
+@media (max-width: 720px) {
+  .app-shell { padding: 0 20px; }
+  .topbar { min-height: 70px; }
+  .device-note { font-size: 10px; }
+  .topbar-actions { gap: 9px; }
+  .intro { flex-direction: column; align-items: flex-start; padding: 26px 0 20px; gap: 19px; }
+  h1 { font-size: 33px; letter-spacing: -1.5px; }
+  .intro-description { font-size: 13px; max-width: 320px; line-height: 1.7; }
+  .intro .eyebrow { display: none; }
+  .segmented-control { width: 100%; padding: 4px; }
+  .segmented-control button { flex: 1; min-height: 36px; font-size: 12px; }
+  .stage-navigation { gap: 5px; margin-bottom: 18px; }
+  .stage-button { flex-direction: column; justify-content: center; gap: 8px; padding: 11px 2px; border-radius: 12px; text-align: center; }
+  .stage-name { font-size: 9px; }
+  .stage-number { width: 26px; height: 26px; font-size: 10px; }
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 19px; }
+  .playground-input { padding: 23px 21px 22px; }
+  .result-section { padding: 16px 21px 22px; min-height: 206px; }
+  .model-badge { display: block; font-size: 9px; padding: 5px 7px; }
+  h2 { font-size: 21px; letter-spacing: -.7px; }
+  .stage-description { font-size: 12px; }
+  .playground .stage-description { display: none; }
+  .stage-heading { gap: 10px; }
+  #prompt-form { margin-top: 22px; }
+  label { font-size: 11px; }
+  #prompt { font-size: 16px; min-height: 83px; }
+  .keyboard-hint { display: none; }
+  .submit-row { justify-content: flex-end; margin-top: 18px; }
+  .primary-button { font-size: 12px; min-height: 44px; }
+  .result { font-size: 15px; line-height: 1.85; }
+  .sidebar { display: flex; flex-direction: column; }
+  .stage-pager { order: -1; margin: 0 0 18px; }
+  .next-button { font-size: 12px; }
+  .insight-card { position: relative; padding: 22px; min-height: 185px; }
+  .concept-visual { float: right; margin: 5px 0 10px 16px; width: 115px; height: 65px; gap: 4px; }
+  .visual-word { padding: 7px; font-size: 9px; }
+  .visual-arrow { font-size: 12px; margin: 0; }
+  .visual-stack { width: 104px; }
+  .visual-bubble { font-size: 9px; padding: 8px 10px; }
+  .visual-bubble.reply { margin: 5px 0 0 10px; }
+  .visual-task { font-size: 10px; gap: 6px; }
+  .insight-card h3 { font-size: 17px; }
+  .insight-card > p:not(.eyebrow) { font-size: 12px; }
+  .try-tip { clear: both; margin-top: 16px; padding-top: 12px; }
+  .utility-list { margin-bottom: 0; }
+  .utility-row strong { font-size: 12px; }
+  .utility-row small { font-size: 11px; }
+  .footer { flex-direction: column; align-items: flex-start; margin-top: 24px; gap: 8px; font-size: 10px; }
+  .footer .text-button { font-size: 10px; }
+  .compare-input { padding: 23px 21px; }
+  .compare-form-row { flex-direction: column; align-items: stretch; }
+  .compare-form-row .primary-button { align-self: flex-end; }
+  .compare-form-row textarea { font-size: 16px; }
+  .five-models { font-size: 15px; }
+  .compare-heading h2 { font-size: 20px; }
+  .comparison-card { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 22px; }
+  .comparison-model { display: grid; grid-template-columns: 73px 1fr; gap: 0 8px; align-items: center; }
+  .comparison-model .model-badge { grid-row: 1 / 3; margin: 0; justify-self: start; }
+  .comparison-model p { margin-top: 3px; }
+  .comparison-open { grid-column: 2; padding-top: 5px; justify-self: start; }
+  .compare-empty { font-size: 15px; padding: 45px 12px; }
+  .sheet { width: 100%; max-height: 91dvh; margin: auto 0 0; border-radius: 24px 24px 0 0; padding: 25px 22px max(24px, env(safe-area-inset-bottom)); }
+  .sheet textarea, .sheet select, .sheet input[type="number"] { font-size: 16px; }
+  .sheet-header h2 { font-size: 23px; }
+  .sheet-footer { position: sticky; bottom: -24px; background: white; padding-bottom: 4px; }
+  .source-count { font-size: 9px; }
+  dl { grid-template-columns: 90px minmax(0, 1fr); gap: 10px; }
+}
+@media (max-width: 370px) {
+  .app-shell { padding: 0 14px; }
+  h1 { font-size: 29px; }
+  .brand-description { display: none; }
+  .playground-input, .result-section { padding-left: 18px; padding-right: 18px; }
+  .model-badge { display: none; }
+  .stage-name { font-size: 8px; }
+  .concept-visual { width: 100px; margin-left: 10px; }
+}
+/* Dark appearance keeps the same layout and blue accent, with softer surfaces. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #101113;
+  --surface: #1c1d20;
+  --text: #f5f5f7;
+  --secondary: #a8aab4;
+  --muted: #9699a3;
+  --line: #32343c;
+  --accent: #78b4ff;
+  --accent-hover: #9bc8ff;
+  --accent-soft: #23344c;
+}
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .footer,
+:root[data-theme="dark"] .utility-row { border-color: var(--line); }
+:root[data-theme="dark"] .brand img { outline: 1px solid #41434b; }
+:root[data-theme="dark"] .icon-button:hover:not(:disabled),
+:root[data-theme="dark"] .stage-button:hover,
+:root[data-theme="dark"] .next-button:hover { background: #2a2c33; }
+:root[data-theme="dark"] .segmented-control { background: #24262b; }
+:root[data-theme="dark"] .segmented-control button[aria-selected="true"] { background: #3a3c44; }
+:root[data-theme="dark"] .stage-button[aria-current="step"] { background: #23252a; border-color: #3a3d46; }
+:root[data-theme="dark"] .stage-number { background: #30323a; color: #b9bdc8; }
+:root[data-theme="dark"] .stage-button[aria-current="step"] .stage-number,
+:root[data-theme="dark"] .primary-button { background: #0071e3; color: white; }
+:root[data-theme="dark"] .primary-button:hover { background: #0062c4; }
+:root[data-theme="dark"] label { color: #d4d6de; }
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] input[type="number"] { background: #25272d; border-color: #373a44; }
+:root[data-theme="dark"] textarea:focus,
+:root[data-theme="dark"] select:focus,
+:root[data-theme="dark"] input:focus { border-color: #79b6ff; }
+:root[data-theme="dark"] .example-button,
+:root[data-theme="dark"] .pill-button,
+:root[data-theme="dark"] .secondary-button { background: #2a2c33; border-color: #3a3d47; color: #bdc0cb; }
+:root[data-theme="dark"] .example-button:hover,
+:root[data-theme="dark"] .pill-button:hover { background: var(--accent-soft); color: var(--accent); border-color: #3f5f88; }
+:root[data-theme="dark"] .secondary-button:hover { background: #363942; }
+:root[data-theme="dark"] .result-section { background: #191a1d; }
+:root[data-theme="dark"] .result-note,
+:root[data-theme="dark"] .honesty-note { background: #282a31; }
+:root[data-theme="dark"] .prediction-track { background: #303c4f; }
+:root[data-theme="dark"] .insight-card { background: #1c2839; border-color: #2b3c54; }
+:root[data-theme="dark"] .insight-card .eyebrow { color: #9ab2d3; }
+:root[data-theme="dark"] .insight-card > p:not(.eyebrow) { color: #b4c1d4; }
+:root[data-theme="dark"] .try-tip { border-color: #354a65; color: #b5cce9; }
+:root[data-theme="dark"] .visual-word { background: #29394f; border-color: #3b506f; color: #d5dfef; }
+:root[data-theme="dark"] .visual-word.emphasis { background: #26456d; border-color: #3d6291; color: #a4cdff; }
+:root[data-theme="dark"] .visual-arrow { color: #9bb3d2; }
+:root[data-theme="dark"] .visual-line { background: #3b526f; }
+:root[data-theme="dark"] .visual-line.emphasis { background: #75a9ed; }
+:root[data-theme="dark"] .visual-bubble { background: #2a3a51; color: #d0dcef; }
+:root[data-theme="dark"] .visual-bubble.reply { background: #26466f; color: #b9d7ff; }
+:root[data-theme="dark"] .visual-task { color: #bdd1ed; }
+:root[data-theme="dark"] .visual-task i { background: #2c4568; }
+:root[data-theme="dark"] .utility-row strong,
+:root[data-theme="dark"] .next-button { color: #dddfe8; }
+:root[data-theme="dark"] .previous-button { border-color: var(--line); }
+:root[data-theme="dark"] .sheet { background: var(--surface); border-color: #3a3d46; }
+:root[data-theme="dark"] .sheet::backdrop { background: #0009; }
+:root[data-theme="dark"] .sheet-footer { background: var(--surface); }
+:root[data-theme="dark"] .help-steps li::before { background: var(--accent-soft); }
+:root[data-theme="dark"] .field-error { color: #ffabab; }
+:root[data-theme="dark"] .chat-message { background: #2a2d35; }
+:root[data-theme="dark"] .chat-message.user { background: #223f61; }
+:root[data-theme="dark"] .skip-link { color: #1d1d1f; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
+</style>
 </head>
-
 <body>
-  <button type="button" id="helpButton" class="help-button" onclick="openHelp()" title="Help">?</button>
-  <div class="help-callout" onclick="openHelp()" title="Open AI basics help">
-    Click and read me<br>
-    <span>to understand the basics of AI, my fellow Human.</span><br>
-    Scroll to the bottom for examples.
-  </div>
-
-
-  <div id="helpBackdrop" class="modal-backdrop" onclick="backdropClose(event)">
-    <div class="help-modal">
-      <div class="help-head">
-        <div>
-          <h2>What is this thing?</h2>
-          <div class="sub">This is the simple help screen.</div>
+  <a class="skip-link" href="#main">Skip to playground</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#main" aria-label="Tiny AI home">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjMwIiBmaWxsPSIjMWQxZDFmIi8+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQyIDg1VjQ0TTQyIDQ0bDQ0IDQxTTg2IDg1VjQ0Ii8+PC9nPjxjaXJjbGUgY3g9IjQyIiBjeT0iNDQiIHI9IjgiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI0MiIgY3k9Ijg1IiByPSI4IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iODYiIGN5PSI0NCIgcj0iOCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iODUiIHI9IjgiIGZpbGw9IiNmZmYiLz48L3N2Zz4K" width="32" height="32" alt="">
+        <span>Tiny AI<span class="brand-description">A learning playground</span></span>
+      </a>
+      <div class="topbar-actions">
+        <div class="device-controls">
+          <span class="device-note"><span class="status-dot"></span>On your device</span>
+          <button class="theme-toggle" id="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Dark theme">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.4A8.5 8.5 0 0 1 9.6 3.8a8.5 8.5 0 1 0 10.6 10.6Z"/></svg>
+            <span>Dark theme</span><span class="theme-switch" aria-hidden="true"><span></span></span>
+          </button>
         </div>
-        <button class="close-help" onclick="closeHelp()" title="Close">×</button>
+        <button class="icon-button" id="help-button" aria-label="How to use Tiny AI" title="How it works">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9a2.4 2.4 0 0 1 4.7.6c0 1.8-2.3 1.9-2.3 3.9M12 17h.01"/></svg>
+        </button>
       </div>
-
-      <div class="goal-box">
-        <strong>Main goal:</strong><br>
-        The goal is to show how a tiny language model works. You give it example text.
-        It learns little word patterns from that text. Then you give it a starting line,
-        and it tries to continue the sentence.
-        <br><br>
-        It is basically: <strong>feed it words → train it → give it a start → it guesses more words.</strong>
-      </div>
-
-      <div class="help-step blue">
-        <div class="help-step-num title-blue">!</div>
-        <div>
-          <h3>The blue box is the toy model's pretend internet</h3>
-          <p>
-            On the main screen, just think: <strong>blue box = internet</strong>.
-            But inside that pretend internet, imagine all the stuff AI can learn patterns from:
-            books, conversations, sentences, code, lyrics, articles, examples, and training data.
-            <br><br>
-            When the blue box is empty, the tiny model has nothing because you have not given it words or sentences yet.
-            It only starts learning once you start filling it with stuff.
-          </p>
-        </div>
-      </div>
-
-      <div class="help-step blue">
-        <div class="help-step-num title-blue">1</div>
-        <div>
-          <h3>Blue box = food for the model</h3>
-          <p>
-            Paste text into the big blue box. This is what the model learns from.
-            More text gives it more patterns. Tiny text means tiny brain.
-          </p>
-        </div>
-      </div>
-
-      <div class="help-step purple">
-        <div class="help-step-num title-purple">2</div>
-        <div>
-          <h3>Purple box = settings</h3>
-          <p>
-            You can ignore this at first. Leave it on 2 words. That means the model looks at
-            the last 2 words and guesses what word usually comes next.
-          </p>
-        </div>
-      </div>
-
-      <div class="help-step green">
-        <div class="help-step-num title-green">3</div>
-        <div>
-          <h3>Green button = make it learn</h3>
-          <p>
-            After you paste or change the blue text, click Train Model.
-            This is like saying: “read this and remember the word patterns.”
-          </p>
-        </div>
-      </div>
-
-      <div class="help-step yellow">
-        <div class="help-step-num title-yellow">4</div>
-        <div>
-          <h3>Yellow box = starting words</h3>
-          <p>
-            Type the start of a sentence here. Example: “The dog”.
-            The model uses those words as the starting point.
-          </p>
-        </div>
-      </div>
-
-      <div class="help-step orange">
-        <div class="help-step-num title-orange">5</div>
-        <div>
-          <h3>Orange box = answer comes out here</h3>
-          <p>
-            Click Train + Generate. The model will spit out words in the orange box.
-            It might sound weird because it is not truly thinking. It is only guessing from patterns.
-          </p>
-        </div>
-      </div>
-
-      <div class="help-example">
-        <strong>Dead simple example:</strong><br>
-        Blue box says: <code>The dog ran home. The dog ate food.</code><br>
-        Yellow prompt says: <code>The dog</code><br>
-        Output might say: <code>The dog ran home.</code> or <code>The dog ate food.</code><br><br>
-        That is the whole point. It learns what usually comes after words.
-      </div>
-
-      <div class="help-bottom-note">
-        <strong>Important tiny-brain detail:</strong><br>
-        Also, <code>human</code> and <code>humans</code> are treated as different words.
-        The tiny model does not know they mean almost the same thing.
-        <br><br>
-        When this page says it is <strong>not a big AI brain like ChatGPT</strong>, it means:
-        this tiny model does not understand meaning, grammar, emotion, logic, or real-world facts.
-        It only counts word patterns from the blue box and guesses what word might come next.
-      </div>
-
-      <div class="mega-tip">
-        <h3>Extra tip: how this toy connects to ChatGPT</h3>
-
-        <p>
-          <strong>Bro version:</strong> ChatGPT is basically the mega version of this little
-          <strong>Language Pattern</strong> toy.
-        </p>
-
-        <p>This toy model does this:</p>
-        <div class="simple-quote">
-          “I saw <code>human can</code> before, so maybe the next word is <code>fly</code>.”
-        </div>
-
-        <p>ChatGPT does a much more advanced version of this:</p>
-        <div class="simple-quote">
-          “Given everything in this conversation, what text should come next?”
-        </div>
-
-        <p>
-          But instead of remembering simple word pairs, ChatGPT has a huge neural network with billions of learned
-          number-values inside it. Those numbers are called <strong>weights</strong>.
-          Think of weights like tiny dials that get adjusted during training.
-        </p>
-
-        <h3>AI music works in a similar way</h3>
-        <p>
-          Think of AI generative music apps the same way.
-        </p>
-
-        <p>This toy asks:</p>
-        <div class="simple-quote">
-          “What word usually comes next after these words?”
-        </div>
-
-        <p>An AI music model is doing a similar idea, but with sound:</p>
-        <div class="simple-quote">
-          “What sound usually comes next after this sound?”<br>
-          “What guitar note usually comes next after this guitar note?”<br>
-          “What drum hit usually comes next after this beat?”<br>
-          “What chord usually comes next after this chord?”<br>
-          “What vocal texture usually comes next after this vocal line?”
-        </div>
-
-        <p>
-          So when an AI music app creates music, it is not sitting there like a human with a guitar thinking,
-          “I feel sad, so I’ll write this beautiful chord.”
-        </p>
-
-        <p>
-          It has learned huge patterns from music/audio, like:
-        </p>
-
-        <ul>
-          <li>kick usually lands here</li>
-          <li>snare usually lands there</li>
-          <li>bass often follows the chord</li>
-          <li>a vocal line often rises before a chorus</li>
-          <li>a drop usually comes after a build-up</li>
-          <li>sad acoustic songs often use softer notes and space</li>
-          <li>house music often repeats grooves and slowly changes layers</li>
-        </ul>
-
-        <div class="simple-quote">
-          Music AI version: “Given all the sound so far, what sound should come next?”
-        </div>
-
-        <p>
-          Text AI predicts text patterns. Music AI predicts sound patterns.
-          Bigger models just do it at a much crazier level.
-        </p>
-
-
-        <h3>Now how they trained language, simple version</h3>
-
-        <h3>1. Feed it a stupid amount of text</h3>
-        <p>
-          They train a base model on huge amounts of text written by humans:
-          books, websites, code, articles, conversations, and other text sources.
-        </p>
-
-        <p>The basic training game is:</p>
-        <ol>
-          <li>Hide the next word/token.</li>
-          <li>Ask the model to guess it.</li>
-          <li>If it guesses wrong, adjust the internal number-dials slightly.</li>
-          <li>Do that billions or trillions of times.</li>
-        </ol>
-
-        <div class="simple-quote">
-          Example: <code>The dog jumped over the ___</code><br>
-          It guesses: <code>fence</code><br>
-          Maybe the real answer was: <code>gate</code><br>
-          So it slightly adjusts its internal dials.
-        </div>
-
-        <p>
-          Again and again and again. That is the base language model.
-        </p>
-
-        <h3>2. Then they teach it to follow instructions</h3>
-        <p>
-          A raw base model is not automatically a good assistant.
-          It might ramble, complete your sentence weirdly, or answer in a useless way.
-        </p>
-
-        <p>
-          So humans give example prompts and write good answers.
-          The model gets trained on examples like:
-        </p>
-
-        <div class="simple-quote">
-          User asks question → assistant gives helpful answer.
-        </div>
-
-        <h3>3. Then humans compare answers</h3>
-        <p>
-          They show human reviewers multiple answers from the model and ask:
-        </p>
-
-        <div class="simple-quote">
-          Which answer is better?
-        </div>
-
-        <p>Example:</p>
-        <ul>
-          <li>User asks: <code>Explain tax deductions simply.</code></li>
-          <li>Answer A is confusing.</li>
-          <li>Answer B is clear.</li>
-          <li>Human says B is better.</li>
-        </ul>
-
-        <p>
-          They collect heaps of these comparisons.
-        </p>
-
-        <h3>4. Then they train a reward model</h3>
-        <p>
-          This part is wild. They train another model to predict what humans would prefer.
-        </p>
-
-        <p>
-          So now the system has something like a taste judge:
-        </p>
-
-        <div class="simple-quote">
-          “This answer is probably better.”<br>
-          “This answer is probably worse.”
-        </div>
-
-        <h3>5. Then they use RLHF</h3>
-        <p>
-          RLHF means <strong>Reinforcement Learning from Human Feedback</strong>.
-        </p>
-
-        <p>Simple version:</p>
-        <ul>
-          <li>Reward the model when it gives answers humans prefer.</li>
-          <li>Push it away from answers humans dislike.</li>
-        </ul>
-
-        <h3>So what is ChatGPT “thinking”?</h3>
-        <p>
-          It is not thinking like a human with feelings and a soul sitting inside the computer.
-          It is more like a massive prediction engine.
-        </p>
-
-        <p>
-          But because it was trained on so much text, code, explanations, arguments, questions,
-          answers, stories, maths, and human conversation, the next-token prediction becomes crazy powerful.
-        </p>
-
-        <p>
-          At small scale, like this HTML toy file app you're using right now, it can say cooked stuff like:
-        </p>
-
-        <div class="simple-quote">
-          human truck sky human can roll
-        </div>
-
-        <p>
-          At huge scale, it starts learning patterns like:
-        </p>
-
-        <ul>
-          <li>how grammar works</li>
-          <li>how code works</li>
-          <li>how questions work</li>
-          <li>how explanations work</li>
-          <li>how humans usually reason</li>
-          <li>how conversations flow</li>
-          <li>how tone works</li>
-          <li>how <code>dog</code> and <code>dogs</code> are connected</li>
-          <li>how <code>human</code> and <code>humans</code> are related</li>
-        </ul>
-
-        <p>
-          That is why this HTML toy is not a big AI brain like ChatGPT.
-        </p>
-
-        <div class="simple-quote">
-          This HTML toy = a calculator with a notebook.<br>
-          ChatGPT = a giant trained neural network running on serious computer hardware.
-        </div>
-
-        <h3>Dumbest possible summary</h3>
-        <ol>
-          <li>Read internet-scale text.</li>
-          <li>Guess missing words/tokens.</li>
-          <li>Get corrected.</li>
-          <li>Do that an insane number of times.</li>
-          <li>Then humans teach it how to answer nicely.</li>
-          <li>Then humans rank its answers.</li>
-          <li>Then it gets tuned toward the answers humans prefer.</li>
-        </ol>
-
-        <p>
-          So this little <strong>Word Pattern / What Usually Comes Next</strong> toy model is the baby version of the first idea.
-        </p>
-
-        <p>
-          ChatGPT is that idea scaled up to an insane level, with human training layered on top.
-        </p>
-
-        <h3>Same idea, different AI types</h3>
-
-        <ul>
-          <li>
-            <strong>Language</strong> - What usually comes next after this word, sentence, question, or conversation?
-            <div class="simple-quote">
-              Example:<br>
-              User types: <code>The dog jumped over the</code>
-              <br><br>
-              It predicts:<br>
-              <code>fence</code>, <code>gate</code>, <code>wall</code>, or whatever usually comes next in writing.
-            </div>
-          </li>
-
-          <li>
-            <strong>Music</strong> - What usually comes next after this sound, chord, drum hit, vocal line, or moment in the song?
-            <div class="simple-quote">
-              Example:<br>
-              The song has a build-up, rising synth, faster drums, and tension.
-              <br><br>
-              It predicts:<br>
-              drop, bass hit, kick drum, wider chorus, or a vocal hook.
-            </div>
-          </li>
-
-          <li>
-            <strong>Coding</strong> - What usually comes next after this code, function, file, error message, or programming pattern?
-            <div class="simple-quote">
-              Example:<br>
-              Code says: <code>function add(a, b) { return</code>
-              <br><br>
-              It predicts:<br>
-              <code>a + b;</code>
-            </div>
-          </li>
-
-          <li>
-            <strong>Images</strong> - What pixels, shapes, colours, shadows, faces, objects, or background usually belong here?
-            <div class="simple-quote">
-              Example:<br>
-              Prompt says: <code>a dog wearing sunglasses on a beach</code>
-              <br><br>
-              It predicts:<br>
-              dog shape, fur, sunglasses over the eyes, sand, sky, ocean, sunlight, shadows.
-            </div>
-          </li>
-
-          <li>
-            <strong>Video</strong> - What frame, movement, camera angle, or action usually comes next?
-            <div class="simple-quote">
-              Example:<br>
-              A video shows a person bending their knees before jumping.
-              <br><br>
-              It predicts:<br>
-              body moves upward, feet leave ground, arms move, then the person lands.
-            </div>
-          </li>
-
-          <li>
-            <strong>Voice / Speech</strong> - What sound, word, tone, or voice pattern usually comes next?
-            <div class="simple-quote">
-              Example:<br>
-              Audio says: <code>Hello, how are...</code>
-              <br><br>
-              It predicts:<br>
-              <code>you</code>, because that sound/phrase usually finishes that way.
-            </div>
-          </li>
-
-          <li>
-            <strong>Robotics</strong> - What action should usually happen next in this situation?
-            <div class="simple-quote">
-              Example:<br>
-              robot sees cup on table, hand is nearby
-              <br><br>
-              It predicts:<br>
-              move hand toward cup, grip cup, lift cup
-            </div>
-          </li>
-
-          <li>
-            <strong>Recommendations</strong> - What would this person probably want, click, watch, buy, or listen to next?
-            <div class="simple-quote">
-              Example:<br>
-              Someone keeps watching Hilux videos, mowing business videos, and motorbike videos.
-              <br><br>
-              It predicts:<br>
-              show them another ute video, mower setup video, tool review, or motorbike clip.
-            </div>
-          </li>
-
-          <li>
-            <strong>Gaming AI</strong> - What move, attack, dodge, path, or decision usually makes sense next?
-            <div class="simple-quote">
-              Example:<br>
-              Enemy sees player nearby, enemy has low health, player is aiming at them.
-              <br><br>
-              It predicts:<br>
-              run behind cover, dodge, reload, attack, or retreat.
-            </div>
-          </li>
-
-          <li>
-            <strong>Medical AI</strong> - What condition, scan pattern, or warning sign does this usually look like?
-            <div class="simple-quote">
-              Example:<br>
-              A scan has a certain shadow, shape, size, and location that doctors have labelled before.
-              <br><br>
-              It predicts:<br>
-              this pattern may match a known condition, or it may need a doctor to check it.
-            </div>
-          </li>
-
-          <li>
-            <strong>Fraud detection AI</strong> - Does this behaviour look normal, wrong, fake, risky, or suspicious?
-            <div class="simple-quote">
-              Example:<br>
-              Card is used in Sydney, then 10 minutes later it is used overseas.
-              <br><br>
-              It predicts:<br>
-              suspicious pattern, possible fraud, block transaction or ask for verification.
-            </div>
-          </li>
-
-          <li>
-            <strong>Detection AI</strong> - What category does this thing belong in, and does anything look off?
-            <div class="simple-quote">
-              Example:<br>
-              Camera sees an object on the road.
-              <br><br>
-              It predicts:<br>
-              person, dog, car, rubbish bag, traffic cone, or “unknown object”.
-            </div>
-          </li>
-        </ul>
-
-        <ul>
-          <li><strong>Blah</strong> - What usually comes after this part</li>
-          <li><strong>Blah</strong> - What usually comes next after this</li>
-          <li><strong>So on and so on</strong></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="wrap">
-    <header>
-      <h1>Tiny ChatGPT Evolution Lab</h1>
-      <div class="sub">
-        Five toy stages in one HTML file: ChatGPT 0, 1, 2, 3 and 3.5. Use the same prompt on every stage and watch it move from blindly joining words to following instructions and holding a simple conversation.
-        Everything runs inside your browser. No internet. No API.
-      </div>
-
-      <div class="scale-box">
-        <span>Same prompt. Five generations.</span><br>
-        Each section adds one major ability, so the improvement is visible instead of hidden behind one magic button.
-      </div>
-
-      <div class="bro-box">
-        <strong>Super simple version:</strong>
-        Type one question in the comparison box below, press <strong>Run all versions</strong>, then scroll down through ChatGPT 0 → 3.5.
-      </div>
-
-      <div class="quick-fix">
-        <strong>Important:</strong>
-        These are small educational simulations of the main ideas. They are not OpenAI's private model code and they do not reproduce the real models' intelligence.
-      </div>
-
-      <div class="history-note">
-        <strong>Naming note:</strong> The real releases were called GPT-1, GPT-2 and GPT-3. The ChatGPT product arrived later using a GPT-3.5-family model. This page keeps your simple “ChatGPT 0, 1, 2, 3, 3.5” labels so the ladder is easy to follow.
-      </div>
-
-      <nav class="version-jump" aria-label="Jump to a model version">
-        <a href="#chatgpt-0">ChatGPT 0</a>
-        <a href="#chatgpt-1">ChatGPT 1</a>
-        <a href="#chatgpt-2">ChatGPT 2</a>
-        <a href="#chatgpt-3">ChatGPT 3</a>
-        <a href="#chatgpt-35">ChatGPT 3.5</a>
-      </nav>
     </header>
 
-    <section class="compare-console" aria-labelledby="compareTitle">
-      <h2 id="compareTitle">Run one prompt through every version</h2>
-      <p>This copies the same prompt into all five stages. ChatGPT 0 will usually stumble; each later toy stage gains another useful ability.</p>
-      <label for="evolutionPrompt">Shared comparison prompt</label>
-      <div class="compare-row">
-        <input id="evolutionPrompt" value="Explain how a small AI learns from text." />
-        <button class="run-all-btn" type="button" onclick="runAllVersions()">Run all versions ↓</button>
-      </div>
-      <div id="comparisonStatus" class="comparison-status" aria-live="polite"></div>
-    </section>
-
-    <section id="chatgpt-0" class="version-stage v0">
-      <div class="version-heading">
-        <div class="version-badge">0</div>
+    <main id="main">
+      <div class="intro">
         <div>
-          <h2>ChatGPT 0 — the code you supplied</h2>
-          <p>A word-chain machine. It remembers only the last few words and guesses what comes next. It has no attention, instructions, facts or conversation.</p>
+          <p class="eyebrow">SMALL MODELS. SIMPLE IDEAS.</p>
+          <h1>AI, one step at a time.</h1>
+          <p class="intro-description">See how a language model works.</p>
         </div>
-        <div class="era-chip">Invented baseline</div>
-      </div>
-
-      <div class="capability-grid" aria-label="ChatGPT 0 capability levels">
-        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 10%; --meter-color: #d4d4d4"></span></div></div>
-        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 12%; --meter-color: #d4d4d4"></span></div></div>
-        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 0%; --meter-color: #d4d4d4"></span></div></div>
-        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 0%; --meter-color: #d4d4d4"></span></div></div>
-      </div>
-
-    <section class="steps-strip">
-      <div class="mini-step blue">
-        <div class="num">1</div>
-        <strong>Paste text</strong>
-        <span>This is the little robot's food.</span>
-      </div>
-
-      <div class="mini-step purple">
-        <div class="num">2</div>
-        <strong>Settings</strong>
-        <span>Leave these alone at first.</span>
-      </div>
-
-      <div class="mini-step green">
-        <div class="num">3</div>
-        <strong>Train</strong>
-        <span>Click this so it learns patterns.</span>
-      </div>
-
-      <div class="mini-step yellow">
-        <div class="num">4</div>
-        <strong>Prompt</strong>
-        <span>Give it the first few words.</span>
-      </div>
-
-      <div class="mini-step orange">
-        <div class="num">5</div>
-        <strong>Output</strong>
-        <span>This is what it makes.</span>
-      </div>
-    </section>
-
-    <div class="grid">
-      <section class="card blue">
-        <div class="section-title">
-          <span class="big-num title-blue">1</span>
-          <div>
-            <h2>Training Text</h2>
-            <p>Paste a bunch of text here. The model copies patterns from this.</p>
-          </div>
+        <div class="segmented-control" role="tablist" aria-label="Playground view">
+          <button id="explore-tab" role="tab" aria-selected="true" aria-controls="explore-view" tabindex="0">Explore</button>
+          <button id="compare-tab" role="tab" aria-selected="false" aria-controls="compare-view" tabindex="-1">Compare</button>
         </div>
+      </div>
 
-        <div class="training-data-note">
-          <strong>Pretend this blue box is the internet.</strong>
-          <br><br>
-          When it is empty, the tiny model has nothing. It does not magically know stuff.
-          It only starts learning once you fill this blue box with words and sentences.
+      <section id="explore-view" role="tabpanel" aria-labelledby="explore-tab">
+        <nav class="stage-navigation" aria-label="Choose a model stage" id="stage-navigation"></nav>
+        <div class="workspace">
+          <section class="playground panel" aria-labelledby="stage-title">
+            <div class="playground-input">
+              <div class="stage-heading">
+                <div>
+                  <p class="eyebrow" id="stage-counter">STAGE 01 OF 05</p>
+                  <h2 id="stage-title">Guess the next word.</h2>
+                </div>
+                <span class="model-badge" id="model-badge">Model 0</span>
+              </div>
+              <p class="stage-description" id="stage-description"></p>
+              <form id="prompt-form">
+                <label for="prompt" id="prompt-label">Start with a few words</label>
+                <textarea id="prompt" rows="2" maxlength="2000" spellcheck="false" aria-describedby="prompt-error"></textarea>
+                <p class="field-error" id="prompt-error" role="alert" hidden></p>
+                <div class="examples" id="examples" aria-label="Example prompts"></div>
+                <div class="submit-row">
+                  <span class="keyboard-hint">⌘ / Ctrl + Enter to run</span>
+                  <button class="primary-button" id="run-button" type="submit"><span id="run-label">Generate</span><span aria-hidden="true">↗</span></button>
+                </div>
+              </form>
+            </div>
+
+            <div class="result-section">
+              <div class="result-toolbar">
+                <h3 class="eyebrow" id="result-label">THE RESULT</h3>
+                <div class="result-actions">
+                  <button class="text-button" id="clear-chat-button" hidden>Clear chat</button>
+                  <button class="icon-button small" id="copy-button" aria-label="Copy result" title="Copy result" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div id="result" class="result" aria-live="polite" aria-atomic="true"></div>
+              <p class="result-note" id="result-note" hidden></p>
+              <details class="result-details" id="result-details" hidden>
+                <summary>See how it worked<span aria-hidden="true">+</span></summary>
+                <dl id="diagnostics"></dl>
+              </details>
+              <button class="text-button prediction-button" id="prediction-button">What word comes next? <span aria-hidden="true">→</span></button>
+              <div class="predictions" id="predictions" hidden></div>
+            </div>
+          </section>
+
+          <aside class="sidebar" aria-label="About this stage">
+            <section class="insight-card">
+              <div class="concept-visual" id="concept-visual" aria-hidden="true"></div>
+              <p class="eyebrow">THE IDEA</p>
+              <h3 id="idea-title"></h3>
+              <p id="idea-description"></p>
+              <div class="try-tip"><span aria-hidden="true">↳</span><p id="idea-tip"></p></div>
+            </section>
+            <div class="utility-list">
+              <button id="source-button" class="utility-row" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a3 3 0 0 1-3-3V5a1 1 0 0 1 1-1Z"/><path d="M4 17a3 3 0 0 1 3-3h12M8 8h7"/></svg>
+                <span><strong>Learning text</strong><small id="source-summary"></small></span>
+                <span class="chevron" aria-hidden="true">›</span>
+              </button>
+              <button id="settings-button" class="utility-row" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5"/><circle cx="15" cy="17" r="2.5"/></svg>
+                <span><strong id="settings-title">Model settings</strong><small id="settings-summary">The defaults work well</small></span>
+                <span class="chevron" aria-hidden="true">›</span>
+              </button>
+            </div>
+            <div class="stage-pager">
+              <button class="icon-button previous-button" id="previous-button" aria-label="Previous stage" disabled>←</button>
+              <button class="next-button" id="next-button"><span id="next-label">Next: Find the focus</span><span aria-hidden="true">→</span></button>
+            </div>
+          </aside>
         </div>
+      </section>
 
-        <label for="corpus">Blue box: what the model learns from</label>
-        <textarea id="corpus">The old truck rolled down the dirt road at sunset.
+      <section id="compare-view" role="tabpanel" aria-labelledby="compare-tab" hidden>
+        <div class="compare-input panel">
+          <div class="compare-heading"><div><p class="eyebrow">A SIDE-BY-SIDE LOOK</p><h2>One prompt. Five approaches.</h2></div><span class="five-models">0 → 3.5</span></div>
+          <p class="stage-description">Use the same words and spot what each stage can do.</p>
+          <form id="compare-form">
+            <label for="compare-prompt">What would you like to try?</label>
+            <div class="compare-form-row"><textarea id="compare-prompt" rows="2" maxlength="2000">List what a small AI learns from text.</textarea><button class="primary-button" type="submit">Compare models <span aria-hidden="true">↗</span></button></div>
+            <p id="compare-error" class="field-error" role="alert" hidden></p>
+          </form>
+          <button id="compare-source-button" class="text-button compare-source">Edit learning text <span aria-hidden="true">→</span></button>
+        </div>
+        <div id="comparison-results" aria-live="polite" aria-atomic="true"><div class="compare-empty">The same prompt. A different way of using it.<br><span>Run a comparison to see all five results here.</span></div></div>
+      </section>
+
+      <footer class="footer"><p>A teaching demo, running entirely in your browser.</p><div><button class="text-button" id="about-button">About these models</button><button class="text-button" id="install-button" hidden>Install app <span aria-hidden="true">↗</span></button></div></footer>
+    </main>
+  </div>
+
+  <!-- The secondary controls stay out of the main task until they are needed. -->
+  <dialog id="source-dialog" class="sheet" aria-labelledby="source-title">
+    <form id="source-form">
+      <div class="sheet-header"><div><p class="eyebrow">THE STARTING POINT</p><h2 id="source-title">What it learns from.</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Close learning text">×</button></div>
+      <p class="sheet-description">Every model uses this text. Change it to change the results.</p>
+      <div class="preset-row"><button class="pill-button" type="button" id="simple-preset">Simple sample</button><button class="pill-button" type="button" id="original-preset">Original sample</button><button class="text-button" type="button" id="clear-source">Clear</button></div>
+      <label for="source-text">Learning text</label>
+      <textarea id="source-text" rows="11" maxlength="100000" placeholder="Paste a few sentences here…"></textarea>
+      <div class="source-count"><span id="source-count"></span><span>Saved on this device</span></div>
+      <p class="source-reset-note">Using new text starts a fresh experiment and chat.</p>
+      <div class="sheet-footer"><button class="secondary-button" type="button" data-close-dialog>Cancel</button><button class="primary-button" type="submit">Use this text</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="settings-dialog" class="sheet" aria-labelledby="settings-dialog-title">
+    <form id="settings-form">
+      <div class="sheet-header"><div><p class="eyebrow" id="settings-eyebrow">MODEL 0</p><h2 id="settings-dialog-title">Make a small adjustment.</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Close settings">×</button></div>
+      <div id="settings-fields"></div>
+      <div class="sheet-footer"><button type="button" class="text-button" id="reset-settings">Reset defaults</button><button type="submit" class="primary-button">Done</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="help-dialog" class="sheet help-sheet" aria-labelledby="help-title">
+    <div class="sheet-header"><div><p class="eyebrow">A QUICK HELLO</p><h2 id="help-title">Big ideas. Tiny models.</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Close help">×</button></div>
+    <p class="sheet-description">This playground makes a few language-model ideas easier to see.</p>
+    <ol class="help-steps"><li><strong>Start with some text.</strong><span>A small sample is already loaded. You can use your own.</span></li><li><strong>Try a prompt.</strong><span>Generate a result, then open “See how it worked” if you’re curious.</span></li><li><strong>Move to the next stage.</strong><span>Each stage adds a new idea. Compare runs the same prompt through all five.</span></li></ol>
+    <div class="honesty-note"><strong>These are teaching simulations.</strong><p>The five stages use word chains, sentence matching and formatting rules. They are not real GPT models, and do not implement neural-network training or attention. The model numbers are a learning ladder, not a measure of real model performance.</p></div>
+    <details class="help-details"><summary>Use it as an app</summary><p>Once hosted over HTTPS, this app can work offline after its first visit. On iPhone, open it in Safari and choose Share → Add to Home Screen. Other supported browsers may show an Install app button.</p></details>
+    <div class="sheet-footer"><button class="primary-button" type="button" data-close-dialog>Let’s try it</button></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <noscript><p class="noscript">Please enable JavaScript to use the playground. All model processing happens on your device.</p></noscript>
+  <script type="module">
+/* MODEL LOGIC */
+/*
+ * The models, without any page or browser dependencies.
+ *
+ * Stage 0 counts word sequences. Stages 1–2 match sentences. Stages 3–4
+ * add explicit formatting and chat rules. These are teaching simulations,
+ * not implementations of GPT or neural-network training.
+ */
+
+const SIMPLE_TEXT = `The dog ran down the road.
+The dog jumped in the truck.
+The truck rolled down the road.
+The dog looked out the window.
+The road went past the old house.
+The truck stopped near the old house.`;
+
+const ORIGINAL_TEXT = `The old truck rolled down the dirt road at sunset.
 The dog sat in the passenger seat like she owned the place.
 Every job had a rhythm. Load the gear, start the mower, cut the grass, clean the edges, blow the path.
 Some days were easy. Some days felt like another Tuesday.
@@ -1825,1206 +591,839 @@ The crowd wore black and white vans and called themselves different.
 But everyone looked the same under the festival lights.
 A small machine can learn patterns, but it does not understand the world.
 It only guesses what word might come next.
-Still, with enough text, even a tiny model can sound strangely alive.</textarea>
+Still, with enough text, even a tiny model can sound strangely alive.`;
 
-        <div class="settings-box">
-          <div class="section-title">
-            <span class="big-num title-purple">2</span>
-            <div>
-              <h2>Settings</h2>
-              <p>Leave these as-is until you get the hang of it.</p>
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="order">Context size</label>
-              <select id="order">
-                <option value="1">1 word - more random</option>
-                <option value="2" selected>2 words - best basic</option>
-                <option value="3">3 words - needs more text</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="temperature">Randomness</label>
-              <input id="temperature" type="number" value="0.9" min="0.1" max="3" step="0.1">
-            </div>
-
-            <div>
-              <label for="topK">Choice limit</label>
-              <input id="topK" type="number" value="8" min="1" max="50" step="1">
-            </div>
-
-            <div>
-              <label for="maxWords">Max words</label>
-              <input id="maxWords" type="number" value="80" min="5" max="500" step="5">
-            </div>
-          </div>
-
-          <div class="plain-help">
-            <strong>Plain English:</strong><br>
-            Context size = how many previous words it looks at.<br>
-            Randomness = low means safer, high means crazier.<br>
-            Max words = how long the answer can be.
-          </div>
-        </div>
-
-        <div class="actions-box">
-          <div class="section-title">
-            <span class="big-num title-green">3</span>
-            <div>
-              <h2>Train It</h2>
-              <p>Click this after changing the blue text.</p>
-            </div>
-          </div>
-
-          <div class="buttons">
-            <button class="train-btn" onclick="trainModel()">3. Train Model</button>
-            <button class="secondary" onclick="loadSimpleDemo()">Use Super Simple Demo</button>
-            <button class="secondary" onclick="useWordsFromText()">Use Words From My Text</button>
-            <button class="secondary" onclick="loadDemo()">Reload Bigger Demo</button>
-            <button class="secondary" onclick="clearAll()">Clear</button>
-          </div>
-
-          <div class="stats">
-            <div class="stat">
-              <strong id="wordCount">0</strong>
-              <span>words learned</span>
-            </div>
-            <div class="stat">
-              <strong id="stateCount">0</strong>
-              <span>patterns learned</span>
-            </div>
-            <div class="stat">
-              <strong id="vocabCount">0</strong>
-              <span>unique words</span>
-            </div>
-          </div>
-
-          <div id="status" class="status">Model not trained yet.</div>
-        </div>
-      </section>
-
-      <section class="card yellow">
-        <div class="section-title">
-          <span class="big-num title-yellow">4</span>
-          <div>
-            <h2>Prompt</h2>
-            <p>Type the first few words. The model continues from there.</p>
-          </div>
-        </div>
-
-        <label for="prompt">Yellow box: the starting words</label>
-        <input id="prompt" value="The old truck" />
-
-        <div class="buttons">
-          <button class="generate-btn" onclick="generateText()">Train + Generate</button>
-          <button class="predict-btn" onclick="predictNext()">Predict Next Word</button>
-          <button class="secondary" onclick="copyOutput()">Copy Output</button>
-        </div>
-
-        <div class="plain-help">
-          <span class="tag title-yellow">Prompt</span>
-          Example: type <code>The dog</code>, then click <strong>Train + Generate</strong>. It trains first, then continues from your words.
-        </div>
-
-        <br />
-
-        <div class="section-title">
-          <span class="big-num title-orange">5</span>
-          <div>
-            <h2>Output</h2>
-            <p>The generated text appears here.</p>
-          </div>
-        </div>
-
-        <label>Orange box: what the model spits out</label>
-        <div id="output">Paste text in the blue box, type starting words in the yellow box, then click Train + Generate.</div>
-
-        <div class="plain-help">
-          <strong>Important:</strong> This is not a big AI brain like ChatGPT. It is a tiny pattern machine.
-          It does not understand meaning. It just copies the rhythm of the text you trained it on.
-        </div>
-      </section>
-    </div>
-    </section>
-
-    <section id="chatgpt-1" class="version-stage v1">
-      <div class="version-heading">
-        <div class="version-badge">1</div>
-        <div>
-          <h2>ChatGPT 1 — learns which words matter</h2>
-          <p>A toy GPT-1-style step. Instead of only looking backward two words, it compares the whole prompt with the training sentences and puts more weight on relevant words.</p>
-        </div>
-        <div class="era-chip">GPT-1 idea · 2018</div>
-      </div>
-
-      <div class="capability-grid" aria-label="ChatGPT 1 capability levels">
-        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 32%; --meter-color: var(--blue)"></span></div></div>
-        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 30%; --meter-color: var(--blue)"></span></div></div>
-        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 8%; --meter-color: var(--blue)"></span></div></div>
-        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 0%; --meter-color: var(--blue)"></span></div></div>
-      </div>
-
-      <div class="change-list">
-        <div class="change-item"><strong>New: token view</strong>The prompt is broken into pieces the model can process.</div>
-        <div class="change-item"><strong>New: attention idea</strong>Prompt words are scored against the full training text.</div>
-        <div class="change-item"><strong>Still weak</strong>It mainly continues text; it is not yet trained to be a helpful assistant.</div>
-      </div>
-
-      <div class="model-layout">
-        <div class="model-panel">
-          <h3>Try ChatGPT 1</h3>
-          <p>It finds the most relevant learned sentence, then uses that sentence as its continuation.</p>
-          <label for="v1Prompt">Prompt</label>
-          <input id="v1Prompt" class="compact-input" value="Explain how a small AI learns from text." />
-          <div class="version-actions">
-            <button type="button" onclick="runVersion1()">Run ChatGPT 1</button>
-            <button class="ghost-btn" type="button" onclick="copyVersionOutput('v1Output')">Copy output</button>
-          </div>
-
-          <div class="pipeline" aria-label="ChatGPT 1 processing pipeline">
-            <div class="pipe-step active" style="--meter-color: var(--blue)"><strong>1. Tokens</strong>Split the prompt</div>
-            <div class="pipe-step active" style="--meter-color: var(--blue)"><strong>2. Attention</strong>Weight key words</div>
-            <div class="pipe-step"><strong>3. Match</strong>Find a pattern</div>
-            <div class="pipe-step"><strong>4. Continue</strong>Predict text</div>
-          </div>
-        </div>
-
-        <div class="model-panel">
-          <h3>Output</h3>
-          <p>Notice that it can stay on topic better, but it may not actually obey the wording of the request.</p>
-          <div id="v1Output" class="model-output" aria-live="polite">Press Run ChatGPT 1.</div>
-          <div class="inside-box">
-            <div class="inside-row"><strong>Prompt tokens</strong><div id="v1Tokens" class="token-tray"></div></div>
-            <div class="inside-row"><strong>Attention focus</strong><div id="v1Focus" class="token-tray"></div></div>
-            <div class="inside-row"><strong>Best learned match</strong><span id="v1Match">—</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="chatgpt-2" class="version-stage v2">
-      <div class="version-heading">
-        <div class="version-badge">2</div>
-        <div>
-          <h2>ChatGPT 2 — larger, longer, more coherent</h2>
-          <p>A toy GPT-2-style step. It combines several relevant patterns, keeps a longer thread and produces a cleaner continuation without needing a special example for every task.</p>
-        </div>
-        <div class="era-chip">GPT-2 idea · 2019</div>
-      </div>
-
-      <div class="capability-grid" aria-label="ChatGPT 2 capability levels">
-        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 52%; --meter-color: var(--purple)"></span></div></div>
-        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 58%; --meter-color: var(--purple)"></span></div></div>
-        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 20%; --meter-color: var(--purple)"></span></div></div>
-        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 4%; --meter-color: var(--purple)"></span></div></div>
-      </div>
-
-      <div class="change-list">
-        <div class="change-item"><strong>More scale</strong>More learned patterns give it more ways to complete the prompt.</div>
-        <div class="change-item"><strong>Longer context</strong>It can combine several related sentences instead of one local word chain.</div>
-        <div class="change-item"><strong>Still a completer</strong>Helpful answers can happen, but “be an assistant” is not yet the main training goal.</div>
-      </div>
-
-      <div class="model-layout">
-        <div class="model-panel">
-          <h3>Try ChatGPT 2</h3>
-          <p>The demo ranks every learned sentence, gathers the strongest group and builds one topic-focused continuation.</p>
-          <label for="v2Prompt">Prompt</label>
-          <input id="v2Prompt" class="compact-input" value="Explain how a small AI learns from text." />
-          <div class="version-actions">
-            <button type="button" onclick="runVersion2()">Run ChatGPT 2</button>
-            <button class="ghost-btn" type="button" onclick="copyVersionOutput('v2Output')">Copy output</button>
-          </div>
-
-          <div class="pipeline" aria-label="ChatGPT 2 processing pipeline">
-            <div class="pipe-step active" style="--meter-color: var(--purple)"><strong>1. Encode</strong>Read full prompt</div>
-            <div class="pipe-step active" style="--meter-color: var(--purple)"><strong>2. Multi-focus</strong>Track several clues</div>
-            <div class="pipe-step active" style="--meter-color: var(--purple)"><strong>3. Combine</strong>Join patterns</div>
-            <div class="pipe-step"><strong>4. Continue</strong>Make a paragraph</div>
-          </div>
-        </div>
-
-        <div class="model-panel">
-          <h3>Output</h3>
-          <p>It should sound more coherent than version 1, though it still treats many requests like text to continue.</p>
-          <div id="v2Output" class="model-output" aria-live="polite">Press Run ChatGPT 2.</div>
-          <div class="inside-box">
-            <div class="inside-row"><strong>Detected topic</strong><div id="v2Topic" class="token-tray"></div></div>
-            <div class="inside-row"><strong>Context used</strong><span id="v2Context">—</span></div>
-            <div class="inside-row"><strong>Model action</strong><span id="v2Action">—</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="chatgpt-3" class="version-stage v3">
-      <div class="version-heading">
-        <div class="version-badge">3</div>
-        <div>
-          <h2>ChatGPT 3 — learns the task from your prompt</h2>
-          <p>A toy GPT-3-style step. It can detect an instruction such as explain, summarise or list, and it can use examples placed inside the prompt as a temporary pattern.</p>
-        </div>
-        <div class="era-chip">GPT-3 idea · 2020</div>
-      </div>
-
-      <div class="capability-grid" aria-label="ChatGPT 3 capability levels">
-        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 72%; --meter-color: var(--orange)"></span></div></div>
-        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 76%; --meter-color: var(--orange)"></span></div></div>
-        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 63%; --meter-color: var(--orange)"></span></div></div>
-        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 20%; --meter-color: var(--orange)"></span></div></div>
-      </div>
-
-      <div class="change-list">
-        <div class="change-item"><strong>In-context learning</strong>Examples in the prompt can demonstrate what kind of answer you want.</div>
-        <div class="change-item"><strong>Task detection</strong>Explain, summarise and list now lead to different output shapes.</div>
-        <div class="change-item"><strong>Not fully aligned</strong>It is powerful, but helpful chat behaviour is still inconsistent without later instruction training.</div>
-      </div>
-
-      <div class="model-layout">
-        <div class="model-panel">
-          <h3>Try ChatGPT 3</h3>
-          <p>Change the instruction word and watch the answer format change. The examples act like temporary lessons.</p>
-          <label for="v3Examples">Examples inside the prompt</label>
-          <textarea id="v3Examples" class="compact-textarea">Input: Summarise: The dog sat in the truck.
+const DEFAULT_EXAMPLES = `Input: Summarise: The dog sat in the truck.
 Output: A dog rode in a truck.
 
 Input: Explain: A tiny model predicts words.
-Output: It studies patterns and uses them to guess what comes next.</textarea>
-          <label for="v3Prompt">New task</label>
-          <input id="v3Prompt" class="compact-input" value="Explain how a small AI learns from text." />
-          <div class="version-actions">
-            <button type="button" onclick="runVersion3()">Run ChatGPT 3</button>
-            <button class="ghost-btn" type="button" onclick="copyVersionOutput('v3Output')">Copy output</button>
-          </div>
-        </div>
+Output: It studies patterns and uses them to guess what comes next.`;
 
-        <div class="model-panel">
-          <h3>Output</h3>
-          <p>This version tries to do the requested task instead of merely extending the prompt.</p>
-          <div id="v3Output" class="model-output" aria-live="polite">Press Run ChatGPT 3.</div>
-          <div class="inside-box">
-            <div class="inside-row"><strong>Instruction</strong><span id="v3Intent">—</span></div>
-            <div class="inside-row"><strong>Examples found</strong><span id="v3ExampleCount">0</span></div>
-            <div class="inside-row"><strong>Relevant knowledge</strong><span id="v3Knowledge">—</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
+const DEFAULT_SETTINGS = Object.freeze({
+  contextSize: 2,
+  randomness: 0.9,
+  choiceLimit: 8,
+  maxWords: 45,
+  style: "plain",
+  examples: DEFAULT_EXAMPLES,
+});
 
-    <section id="chatgpt-35" class="version-stage v35">
-      <div class="version-heading">
-        <div class="version-badge">3.5</div>
-        <div>
-          <h2>ChatGPT 3.5 — trained to be a chat assistant</h2>
-          <p>The final toy stage adds an instruction layer, assistant-style answers, conversation history and a simple memory of what you were discussing.</p>
-        </div>
-        <div class="era-chip">ChatGPT era · 2022</div>
-      </div>
+function boundedNumber(value, minimum, maximum, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(maximum, Math.max(minimum, number)) : fallback;
+}
 
-      <div class="capability-grid" aria-label="ChatGPT 3.5 capability levels">
-        <div class="capability"><strong>Context</strong><div class="meter"><span style="--value: 82%; --meter-color: var(--green)"></span></div></div>
-        <div class="capability"><strong>Coherence</strong><div class="meter"><span style="--value: 86%; --meter-color: var(--green)"></span></div></div>
-        <div class="capability"><strong>Instructions</strong><div class="meter"><span style="--value: 90%; --meter-color: var(--green)"></span></div></div>
-        <div class="capability"><strong>Conversation</strong><div class="meter"><span style="--value: 86%; --meter-color: var(--green)"></span></div></div>
-      </div>
+function cleanSettings(settings = {}) {
+  if (!settings || typeof settings !== "object") settings = {};
+  return {
+    contextSize: Math.round(boundedNumber(settings.contextSize, 1, 3, 2)),
+    randomness: boundedNumber(settings.randomness, 0.1, 3, 0.9),
+    choiceLimit: Math.round(boundedNumber(settings.choiceLimit, 1, 50, 8)),
+    maxWords: Math.round(boundedNumber(settings.maxWords, 5, 500, 45)),
+    style: ["plain", "brief", "teacher", "casual"].includes(settings.style) ? settings.style : "plain",
+    examples: typeof settings.examples === "string" ? settings.examples.slice(0, 10000) : DEFAULT_EXAMPLES,
+  };
+}
 
-      <div class="change-list">
-        <div class="change-item"><strong>Instruction tuning</strong>It is trained on prompts paired with useful assistant answers.</div>
-        <div class="change-item"><strong>Human preference</strong>Feedback pushes answers toward clear, relevant and safer behaviour.</div>
-        <div class="change-item"><strong>Chat memory</strong>Earlier messages stay in the context so follow-up questions can refer back to them.</div>
-      </div>
+// Keep punctuation so the word chain can learn where sentences end.
+function tokenize(text) {
+  return String(text).replace(/[‘’]/g, "'").match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*|[^\s\p{L}\p{N}]/gu) || [];
+}
 
-      <div class="model-layout">
-        <div class="model-panel">
-          <h3>Assistant controls</h3>
-          <p>The system instruction steers how the assistant should answer. Send a second message such as “make that shorter” to test the conversation memory.</p>
-          <label for="v35System">System instruction</label>
-          <select id="v35System" class="compact-input" onchange="refreshSystemLabel()">
-            <option value="plain" selected>Answer clearly in plain English</option>
-            <option value="brief">Be direct and brief</option>
-            <option value="teacher">Teach it step by step</option>
-            <option value="bro">Use casual, straight-talking language</option>
-          </select>
+function countWords(text) {
+  return tokenize(text).filter(token => /[\p{L}\p{N}]/u.test(token)).length;
+}
 
-          <div class="pipeline" aria-label="ChatGPT 3.5 processing pipeline">
-            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>1. System</strong>Read behaviour rule</div>
-            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>2. History</strong>Read earlier chat</div>
-            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>3. Answer</strong>Follow the task</div>
-            <div class="pipe-step active" style="--meter-color: var(--green)"><strong>4. Preference</strong>Make it useful</div>
-          </div>
+function joinTokens(tokens) {
+  return tokens.join(" ").replace(/\s+([.,!?;:])/g, "$1").replace(/\(\s+/g, "(").replace(/\s+\)/g, ")");
+}
 
-          <div class="inside-box">
-            <div class="inside-row"><strong>System layer</strong><span id="v35SystemLabel">Clear plain English</span></div>
-            <div class="inside-row"><strong>Messages in context</strong><span id="v35MessageCount">0</span></div>
-            <div class="inside-row"><strong>Remembered topics</strong><div id="v35Memory" class="memory-strip"></div></div>
-          </div>
-        </div>
+function splitSentences(text) {
+  return (String(text).match(/[^.!?\n]+(?:[.!?]+|$)/gu) || []).map(sentence => sentence.trim()).filter(Boolean);
+}
 
-        <div class="model-panel">
-          <h3>Chat with version 3.5</h3>
-          <div id="v35Chat" class="chat-window" aria-live="polite">
-            <div class="chat-empty">Your conversation will appear here.</div>
-          </div>
-          <label for="v35Prompt" style="margin-top: 11px;">Message</label>
-          <input id="v35Prompt" class="compact-input" value="Explain how a small AI learns from text." onkeydown="handleChatKey(event)" />
-          <div class="version-actions">
-            <button type="button" onclick="runVersion35()">Send message</button>
-            <button class="ghost-btn" type="button" onclick="clearVersion35()">Clear chat</button>
-          </div>
-        </div>
-      </div>
-    </section>
+function tidySentence(sentence) {
+  const text = String(sentence).trim().replace(/\s+/g, " ");
+  return text ? text[0].toUpperCase() + text.slice(1).replace(/([^.!?])$/, "$1.") : "";
+}
 
-    <div class="footer-note">
-      This page exaggerates each jump so the core ideas are easy to see. Real GPT models learn through huge neural networks, massive datasets and extensive training—not the small browser rules used in this teaching demo.
-    </div>
-  </div>
+/* Stage 0: remember which token followed each short sequence. */
+class WordChain {
+  constructor(text, contextSize = 2) {
+    this.tokens = tokenize(text);
+    this.contextSize = Math.round(boundedNumber(contextSize, 1, 3, 2));
+    this.patterns = new Map();
+    this.starts = [];
 
-  <script>
-    /*
-      Tiny Browser Language Model
-      ---------------------------
-      This is a simple word-level n-gram model.
-
-      Example:
-      If context size is 2, it learns patterns like:
-      "the old" -> "truck"
-      "old truck" -> "rolled"
-      "truck rolled" -> "down"
-
-      Then it generates by repeatedly choosing a likely next word.
-    */
-
-    let model = new Map();
-    let starts = [];
-    let vocabulary = new Set();
-    let trainedOrder = 2;
-    let lastTrainedText = "";
-
-    const biggerDemoText = document.getElementById("corpus").value;
-
-    const simpleDemoText =
-`The dog ran down the road.
-The dog jumped in the truck.
-The truck rolled down the road.
-The dog looked out the window.
-The road went past the old house.
-The truck stopped near the old house.`;
-
-    function tokenize(text) {
-      return text
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-        .replace(/\s+/g, " ")
-        .trim()
-        .match(/[A-Za-z0-9]+(?:'[A-Za-z0-9]+)?|[.,!?;:()"-]/g) || [];
+    for (let index = 0; index < this.tokens.length - this.contextSize; index += 1) {
+      const context = this.tokens.slice(index, index + this.contextSize).map(word => word.toLowerCase());
+      const key = this.contextKey(context);
+      const next = this.tokens[index + this.contextSize];
+      if (!this.patterns.has(key)) this.patterns.set(key, new Map());
+      const counts = this.patterns.get(key);
+      counts.set(next, (counts.get(next) || 0) + 1);
+      if (index === 0 || /[.!?]/.test(this.tokens[index - 1])) this.starts.push(context);
     }
+  }
 
-    function detokenize(tokens) {
-      let text = tokens.join(" ");
+  contextKey(words) { return words.join("\u0001"); }
 
-      text = text.replace(/\s+([.,!?;:])/g, "$1");
-      text = text.replace(/\(\s+/g, "(").replace(/\s+\)/g, ")");
-      text = text.replace(/"\s+/g, '"').replace(/\s+"/g, '"');
-      text = text.replace(/^./, c => c.toUpperCase());
+  randomStart(random = Math.random) {
+    const choices = this.starts.length ? this.starts : [...this.patterns.keys()].map(key => key.split("\u0001"));
+    return choices.length ? choices[Math.floor(random() * choices.length)].slice() : [];
+  }
 
-      return text;
-    }
-
-    function keyFrom(tokens) {
-      return tokens.join("\u0001");
-    }
-
-    function addNextWord(contextTokens, nextToken) {
-      const key = keyFrom(contextTokens);
-
-      if (!model.has(key)) {
-        model.set(key, new Map());
-      }
-
-      const options = model.get(key);
-      options.set(nextToken, (options.get(nextToken) || 0) + 1);
-    }
-
-    function trainModel() {
-      const corpus = document.getElementById("corpus").value;
-      const order = Number(document.getElementById("order").value);
-      const tokens = tokenize(corpus);
-      lastTrainedText = corpus;
-
-      model = new Map();
-      starts = [];
-      vocabulary = new Set(tokens.map(t => t.toLowerCase()));
-      trainedOrder = order;
-
-      if (tokens.length <= order) {
-        setStatus("Not enough text. Add more words or lower the context size.", false);
-        return;
-      }
-
-      for (let i = 0; i <= tokens.length - order - 1; i++) {
-        const context = tokens.slice(i, i + order).map(t => t.toLowerCase());
-        const next = tokens[i + order];
-
-        addNextWord(context, next);
-
-        if (i === 0 || [".", "!", "?"].includes(tokens[i - 1])) {
-          starts.push(context);
-        }
-      }
-
-      document.getElementById("wordCount").textContent = tokens.length;
-      document.getElementById("stateCount").textContent = model.size;
-      document.getElementById("vocabCount").textContent = vocabulary.size;
-
-      setStatus("Green light: model trained. Now use the yellow prompt box.", true);
-      document.getElementById("output").textContent = "Trained. Now click Generate Text on the right.";
-    }
-
-    function setStatus(message, good) {
-      const el = document.getElementById("status");
-      el.textContent = message;
-      el.className = "status " + (good ? "good" : "bad");
-    }
-
-    function weightedChoice(optionsMap, temperature = 1, topK = 8) {
-      let entries = Array.from(optionsMap.entries());
-
-      entries.sort((a, b) => b[1] - a[1]);
-      entries = entries.slice(0, Math.max(1, topK));
-
-      const adjusted = entries.map(([word, count]) => {
-        return [word, Math.pow(count, 1 / Math.max(0.1, temperature))];
-      });
-
-      const total = adjusted.reduce((sum, item) => sum + item[1], 0);
-      let r = Math.random() * total;
-
-      for (const [word, weight] of adjusted) {
-        r -= weight;
-        if (r <= 0) return word;
-      }
-
-      return adjusted[adjusted.length - 1][0];
-    }
-
-    function getContextFromPrompt(promptTokens) {
-      const lowered = promptTokens.map(t => t.toLowerCase());
-
-      if (lowered.length >= trainedOrder) {
-        return lowered.slice(-trainedOrder);
-      }
-
-      if (starts.length > 0) {
-        const randomStart = starts[Math.floor(Math.random() * starts.length)];
-        return randomStart.slice(0, trainedOrder - lowered.length).concat(lowered);
-      }
-
-      return lowered;
-    }
-
-    function fallbackContext() {
-      if (starts.length > 0) {
-        return starts[Math.floor(Math.random() * starts.length)];
-      }
-
-      const keys = Array.from(model.keys());
-      if (keys.length === 0) return [];
-      return keys[Math.floor(Math.random() * keys.length)].split("\u0001");
-    }
-
-    function generateText() {
-      // Idiot-proof behaviour:
-      // Every time the user clicks this button, train on the current blue box first.
-      // That way the model never accidentally uses old/demo text.
-      trainModel();
-      if (model.size === 0) return;
-
-      const prompt = document.getElementById("prompt").value.trim();
-      const temperature = Number(document.getElementById("temperature").value);
-      const topK = Number(document.getElementById("topK").value);
-      const maxWords = Number(document.getElementById("maxWords").value);
-
-      let outputTokens = tokenize(prompt);
-      let context = outputTokens.length
-        ? getContextFromPrompt(outputTokens)
-        : fallbackContext();
-
-      let note = "";
-
-      if (outputTokens.length === 0) {
-        outputTokens = context.slice();
-        note = "No prompt was typed, so I picked a random starting point from the blue text.\n\n";
-      }
-
-      // If the exact prompt context is not known, try a softer fallback using the last prompt word.
-      if (!model.get(keyFrom(context)) && outputTokens.length > 0) {
-        const lastWord = outputTokens[outputTokens.length - 1].toLowerCase();
-        const keys = Array.from(model.keys());
-
-        let matchingKey = keys.find(k => k.split("\u0001").includes(lastWord));
-
-        if (matchingKey) {
-          context = matchingKey.split("\u0001");
-          note =
-            "Tiny brain note: I could not find your exact prompt pattern, so I used the closest pattern containing \"" +
-            lastWord +
-            "\".\n\n";
-        } else {
-          context = fallbackContext();
-          note =
-            "Tiny brain note: I could not find your prompt words in the blue text, so I started from a random learned pattern instead.\n\n";
-        }
-      }
-
-      for (let i = 0; i < maxWords; i++) {
-        let key = keyFrom(context);
-        let options = model.get(key);
-
-        if (!options) {
-          context = fallbackContext();
-          key = keyFrom(context);
-          options = model.get(key);
-          if (!options) break;
-        }
-
-        const next = weightedChoice(options, temperature, topK);
-        outputTokens.push(next);
-
-        if (
-          outputTokens.length > 20 &&
-          [".", "!", "?"].includes(next) &&
-          Math.random() < 0.28
-        ) {
-          break;
-        }
-
-        context = outputTokens
-          .slice(-trainedOrder)
-          .map(t => t.toLowerCase());
-      }
-
-      document.getElementById("output").textContent = note + detokenize(outputTokens);
-    }
-
-    function predictNext() {
-      // Also auto-train here so predictions always use the current blue text.
-      trainModel();
-      if (model.size === 0) return;
-
-      const prompt = document.getElementById("prompt").value.trim();
-      const promptTokens = tokenize(prompt);
-
-      if (promptTokens.length === 0) {
-        document.getElementById("output").textContent = "Type something in the yellow prompt box first.";
-        return;
-      }
-
-      let context = getContextFromPrompt(promptTokens);
-      let options = model.get(keyFrom(context));
-      let note = "";
-
-      if (!options) {
-        const lastWord = promptTokens[promptTokens.length - 1].toLowerCase();
-        const keys = Array.from(model.keys());
-        const matchingKey = keys.find(k => k.split("\u0001").includes(lastWord));
-
-        if (matchingKey) {
-          context = matchingKey.split("\u0001");
-          options = model.get(matchingKey);
-          note =
-            "No exact match for your full prompt. Closest pattern I found using \"" +
-            lastWord +
-            "\":\n\n";
-        } else {
-          document.getElementById("output").textContent =
-            "I cannot find those prompt words in the blue training text.\n\nTry clicking: Use Words From My Text\n\nOr type a word that definitely appears in the blue box.";
-          return;
-        }
-      }
-
-      const sorted = Array.from(options.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
-      const total = sorted.reduce((sum, item) => sum + item[1], 0);
-
-      document.getElementById("output").textContent =
-        note +
-        "Next-word guesses for: \"" + detokenize(context) + "\"\n\n" +
-        sorted
-          .map(([word, count], i) => {
-            const pct = ((count / total) * 100).toFixed(1);
-            return `${i + 1}. ${word}  (${pct}%)`;
-          })
-          .join("\n");
-    }
-
-    async function copyOutput() {
-      const text = document.getElementById("output").textContent;
-
-      try {
-        await navigator.clipboard.writeText(text);
-        setStatus("Output copied.", true);
-      } catch (err) {
-        setStatus("Copy failed. You can manually highlight the output.", false);
+  findContext(prompt, random = Math.random) {
+    const words = tokenize(prompt).map(word => word.toLowerCase());
+    const exact = words.slice(-this.contextSize);
+    if (this.patterns.has(this.contextKey(exact))) return { words: exact, exact: true };
+    // A short prompt may still match the end of a learned context.
+    const suffix = words.slice(-Math.min(words.length, this.contextSize));
+    if (suffix.length) {
+      for (const key of this.patterns.keys()) {
+        const context = key.split("\u0001");
+        if (context.slice(-suffix.length).join(" ") === suffix.join(" ")) return { words: context, exact: false };
       }
     }
+    return { words: this.randomStart(random), exact: false, fallback: true };
+  }
 
-    function loadSimpleDemo() {
-      document.getElementById("corpus").value = simpleDemoText;
-      document.getElementById("prompt").value = "The dog";
-      document.getElementById("order").value = "2";
-      document.getElementById("temperature").value = "0.8";
-      document.getElementById("topK").value = "4";
-      document.getElementById("maxWords").value = "45";
-      document.getElementById("output").textContent =
-        "Simple demo loaded. Click the green Train Model button.";
-      setStatus("Simple demo loaded. Click Train Model.", true);
-    }
-
-    function loadDemo() {
-      document.getElementById("corpus").value = biggerDemoText;
-      document.getElementById("prompt").value = "The old truck";
-      document.getElementById("output").textContent =
-        "Bigger demo loaded. Click the green Train Model button.";
-      setStatus("Bigger demo loaded. Click Train Model.", true);
-    }
-
-    function clearAll() {
-      document.getElementById("corpus").value = "";
-      document.getElementById("prompt").value = "";
-      document.getElementById("output").textContent = "";
-      document.getElementById("wordCount").textContent = "0";
-      document.getElementById("stateCount").textContent = "0";
-      document.getElementById("vocabCount").textContent = "0";
-      model = new Map();
-      starts = [];
-      vocabulary = new Set();
-      setStatus("Cleared.", true);
-    }
-
-
-    function useWordsFromText() {
-      const tokens = tokenize(document.getElementById("corpus").value)
-        .filter(t => ![".", ",", "!", "?", ";", ":", "(", ")", '"', "-"].includes(t));
-
-      if (tokens.length < 2) {
-        document.getElementById("output").textContent =
-          "Not enough words in the blue box yet. Add more training text first.";
-        return;
-      }
-
-      const order = Number(document.getElementById("order").value);
-      const start = Math.max(0, Math.min(tokens.length - order, Math.floor(tokens.length / 3)));
-      const promptWords = tokens.slice(start, start + order).join(" ");
-
-      document.getElementById("prompt").value = promptWords;
-      document.getElementById("output").textContent =
-        "I picked starting words from your blue text: \"" + promptWords + "\"\n\nNow click Train + Generate.";
-    }
-
-    /*
-      Evolution stages
-      ----------------
-      These small routines deliberately exaggerate the difference between model
-      generations. They are transparent teaching simulations, not real GPT code.
-    */
-
-    const commonWords = new Set([
-      "a", "an", "and", "are", "as", "at", "be", "because", "but", "by", "can",
-      "do", "does", "for", "from", "had", "has", "have", "how", "i", "if", "in",
-      "into", "is", "it", "its", "like", "me", "my", "of", "on", "or", "our",
-      "so", "that", "the", "their", "them", "then", "there", "this", "to", "was",
-      "we", "were", "what", "when", "where", "which", "who", "why", "will", "with",
-      "would", "you", "your", "explain", "summarise", "summarize", "list", "rewrite"
-    ]);
-
-    const relatedWords = {
-      ai: ["machine", "model", "robot"],
-      artificial: ["machine", "model"],
-      intelligence: ["machine", "model", "understand"],
-      learn: ["learns", "learned", "patterns", "training"],
-      learns: ["learn", "patterns", "training"],
-      learning: ["learn", "patterns", "training"],
-      text: ["words", "sentence", "patterns"],
-      language: ["words", "text", "model"],
-      answer: ["output", "response", "words"],
-      truck: ["road", "passenger", "dog"],
-      dog: ["passenger", "truck", "road"],
-      job: ["gear", "mower", "grass"],
-      work: ["job", "gear", "mower"],
-      mower: ["grass", "edges", "gear"]
+  predictions(prompt) {
+    if (!this.patterns.size) return { context: "", choices: [], note: "Add a few more words to the learning text first." };
+    const context = this.findContext(prompt);
+    if (context.fallback) return { context: "", choices: [], note: "Those words don’t appear together in the learning text. Try “The dog”, or use words from your own sample." };
+    const counts = [...this.patterns.get(this.contextKey(context.words)).entries()].sort((a, b) => b[1] - a[1]);
+    const total = counts.reduce((sum, [, count]) => sum + count, 0);
+    return {
+      context: joinTokens(context.words),
+      choices: counts.slice(0, 10).map(([word, count]) => ({ word, probability: count / total })),
+      note: context.exact ? "" : "Using the closest matching word pattern.",
     };
+  }
 
-    function normaliseTerm(word) {
-      let clean = String(word || "")
-        .toLowerCase()
-        .replace(/[^a-z0-9']/g, "");
+  generate(prompt, options = {}, random = Math.random) {
+    if (!this.patterns.size) return { text: "Add more learning text, or choose a smaller context size in Model settings.", details: { "Patterns found": "0" } };
+    const settings = cleanSettings(options);
+    const start = this.findContext(prompt, random);
+    let context = start.words;
+    // If the prompt was unknown, start visibly from learned words instead of
+    // attaching an unrelated sentence to the user's question.
+    const output = start.fallback ? context.slice() : tokenize(prompt);
+    let generatedWords = 0;
 
-      if (clean.length > 6 && clean.endsWith("ing")) clean = clean.slice(0, -3);
-      if (clean.length > 5 && clean.endsWith("ed")) clean = clean.slice(0, -2);
-      if (clean.length > 4 && clean.endsWith("s")) clean = clean.slice(0, -1);
-      return clean;
+    for (let index = 0; index < settings.maxWords * 3 && generatedWords < settings.maxWords; index += 1) {
+      const choices = this.patterns.get(this.contextKey(context));
+      if (!choices) break;
+      const next = chooseWeightedWord(choices, settings, random);
+      output.push(next);
+      if (/[\p{L}\p{N}]/u.test(next)) generatedWords += 1;
+      context = output.slice(-this.contextSize).map(word => word.toLowerCase());
+      if (generatedWords >= Math.min(16, settings.maxWords) && /[.!?]/.test(next)) break;
     }
-
-    function plainTokens(text) {
-      return tokenize(text)
-        .map(normaliseTerm)
-        .filter(Boolean);
-    }
-
-    function contentTokens(text) {
-      return plainTokens(text).filter(word => word.length > 2 && !commonWords.has(word));
-    }
-
-    function unique(items) {
-      return Array.from(new Set(items));
-    }
-
-    function learnedSentences() {
-      const text = document.getElementById("corpus").value.trim();
-      if (!text) return [];
-
-      return (text.match(/[^.!?]+[.!?]?/g) || [])
-        .map(sentence => sentence.replace(/\s+/g, " ").trim())
-        .filter(sentence => contentTokens(sentence).length > 0);
-    }
-
-    function expandedPromptTerms(prompt) {
-      const base = unique(contentTokens(prompt));
-      const expanded = base.slice();
-
-      base.forEach(word => {
-        const extras = relatedWords[word] || relatedWords[normaliseTerm(word)] || [];
-        extras.forEach(extra => expanded.push(normaliseTerm(extra)));
-      });
-
-      return unique(expanded);
-    }
-
-    function rankLearnedSentences(prompt) {
-      const sentences = learnedSentences();
-      const promptTerms = expandedPromptTerms(prompt);
-
-      return sentences
-        .map((sentence, index) => {
-          const words = contentTokens(sentence);
-          const wordSet = new Set(words);
-          let score = 0;
-          const matches = [];
-
-          promptTerms.forEach((term, termIndex) => {
-            if (wordSet.has(term)) {
-              score += termIndex < contentTokens(prompt).length ? 4 : 1.6;
-              matches.push(term);
-            }
-          });
-
-          const directPhrase = contentTokens(prompt).slice(0, 3).join(" ");
-          if (directPhrase && sentence.toLowerCase().includes(directPhrase)) score += 5;
-          score += Math.max(0, 1 - index * 0.015);
-
-          return { sentence, index, score, matches: unique(matches), words };
-        })
-        .sort((a, b) => b.score - a.score || a.index - b.index);
-    }
-
-    function renderTokens(elementId, words, hotWords = []) {
-      const tray = document.getElementById(elementId);
-      tray.textContent = "";
-      const hot = new Set(hotWords.map(normaliseTerm));
-
-      if (!words.length) {
-        tray.textContent = "—";
-        return;
-      }
-
-      words.slice(0, 18).forEach(word => {
-        const pill = document.createElement("span");
-        pill.className = "token-pill" + (hot.has(normaliseTerm(word)) ? " hot" : "");
-        pill.textContent = word;
-        tray.appendChild(pill);
-      });
-    }
-
-    function tidySentence(sentence) {
-      const trimmed = String(sentence || "").trim();
-      if (!trimmed) return "";
-      return trimmed.replace(/^./, char => char.toUpperCase()).replace(/([^.!?])$/, "$1.");
-    }
-
-    function runVersion1(customPrompt) {
-      const input = document.getElementById("v1Prompt");
-      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
-      if (typeof customPrompt === "string") input.value = prompt;
-
-      if (!prompt) {
-        document.getElementById("v1Output").textContent = "Type a prompt first.";
-        return;
-      }
-
-      const ranked = rankLearnedSentences(prompt);
-      const best = ranked[0];
-      const tokens = plainTokens(prompt);
-      const promptTerms = contentTokens(prompt);
-      const focus = best ? unique(best.matches.concat(promptTerms)).slice(0, 8) : promptTerms;
-
-      renderTokens("v1Tokens", tokens, focus);
-      renderTokens("v1Focus", focus, focus);
-
-      if (!best) {
-        document.getElementById("v1Output").textContent = "No training text exists in ChatGPT 0's blue box, so this stage has nothing to learn from.";
-        document.getElementById("v1Match").textContent = "No learned sentences";
-        return;
-      }
-
-      document.getElementById("v1Match").textContent = best.sentence;
-      document.getElementById("v1Output").textContent =
-        prompt + "\n\n" + tidySentence(best.sentence);
-    }
-
-    function runVersion2(customPrompt) {
-      const input = document.getElementById("v2Prompt");
-      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
-      if (typeof customPrompt === "string") input.value = prompt;
-
-      if (!prompt) {
-        document.getElementById("v2Output").textContent = "Type a prompt first.";
-        return;
-      }
-
-      const ranked = rankLearnedSentences(prompt);
-      const strongest = ranked
-        .filter((item, index) => index < 3 && (item.score > 1 || index === 0))
-        .sort((a, b) => a.index - b.index);
-      const topic = unique(contentTokens(prompt)).slice(0, 7);
-
-      renderTokens("v2Topic", topic.length ? topic : ["general text"]);
-
-      if (!strongest.length) {
-        document.getElementById("v2Output").textContent = "No training text exists in the blue box.";
-        document.getElementById("v2Context").textContent = "0 sentences";
-        document.getElementById("v2Action").textContent = "Cannot continue";
-        return;
-      }
-
-      const paragraph = unique(strongest.map(item => tidySentence(item.sentence))).join(" ");
-      const contextWordCount = plainTokens(paragraph).length;
-      document.getElementById("v2Output").textContent = prompt + "\n\n" + paragraph;
-      document.getElementById("v2Context").textContent = `${strongest.length} related sentences · ${contextWordCount} words`;
-      document.getElementById("v2Action").textContent = "Build a coherent topic continuation";
-    }
-
-    function detectIntent(prompt) {
-      const lower = prompt.toLowerCase().trim();
-      if (/\b(summarise|summarize|summary|in short|tldr)\b/.test(lower)) return "summarise";
-      if (/\b(list|bullet|steps|name \d+)\b/.test(lower)) return "list";
-      if (/\b(rewrite|reword|say this differently)\b/.test(lower)) return "rewrite";
-      if (/\b(compare|difference|versus|\bvs\b)\b/.test(lower)) return "compare";
-      if (/\b(explain|why|how|teach|what does)\b/.test(lower)) return "explain";
-      if (lower.endsWith("?") || /^(what|when|where|who|is|are|can|does|do)\b/.test(lower)) return "answer";
-      return "continue";
-    }
-
-    function isAiLearningPrompt(prompt) {
-      const terms = new Set(expandedPromptTerms(prompt));
-      return (
-        terms.has("ai") || terms.has("machine") || terms.has("model") ||
-        terms.has("learn") || terms.has("pattern") || terms.has("training")
-      );
-    }
-
-    function relevantFacts(prompt, limit = 3) {
-      return rankLearnedSentences(prompt)
-        .slice(0, limit)
-        .map(item => tidySentence(item.sentence));
-    }
-
-    function buildInstructionAnswer(prompt) {
-      const intent = detectIntent(prompt);
-      const facts = relevantFacts(prompt, 3);
-
-      if (!facts.length) {
-        return "I do not have any training text to work from yet. Add some text to ChatGPT 0's blue box, then try again.";
-      }
-
-      if (isAiLearningPrompt(prompt) && (intent === "explain" || intent === "answer")) {
-        return "A small language AI learns statistical patterns from lots of text. During training, it repeatedly tries to predict missing or next words and adjusts itself when its prediction is wrong. Later, when you type a prompt, it uses those learned patterns to predict a useful sequence of words. More data, more computing power and better training usually make the result more capable, but prediction is not the same thing as human understanding.";
-      }
-
-      if (intent === "summarise") {
-        return "In short: " + facts.slice(0, 2).join(" ");
-      }
-
-      if (intent === "list") {
-        return facts.map((fact, index) => `${index + 1}. ${fact}`).join("\n");
-      }
-
-      if (intent === "rewrite") {
-        return "Rewritten: " + facts[0];
-      }
-
-      if (intent === "compare") {
-        return "The strongest relevant points are:\n\nA: " + facts[0] + "\n\nB: " + (facts[1] || "The training text does not contain a clear second side to compare.");
-      }
-
-      if (intent === "explain") {
-        return "The basic idea is this: " + facts.join(" ");
-      }
-
-      if (intent === "answer") {
-        return "Based on the training text: " + facts.join(" ");
-      }
-
-      return facts.join(" ");
-    }
-
-    function runVersion3(customPrompt) {
-      const input = document.getElementById("v3Prompt");
-      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
-      if (typeof customPrompt === "string") input.value = prompt;
-
-      if (!prompt) {
-        document.getElementById("v3Output").textContent = "Type a task first.";
-        return;
-      }
-
-      const examples = document.getElementById("v3Examples").value;
-      const exampleCount = (examples.match(/^\s*Input:/gim) || []).length;
-      const intent = detectIntent(prompt);
-      const knowledge = rankLearnedSentences(prompt)[0];
-
-      document.getElementById("v3Intent").textContent = intent.charAt(0).toUpperCase() + intent.slice(1);
-      document.getElementById("v3ExampleCount").textContent = String(exampleCount);
-      document.getElementById("v3Knowledge").textContent = knowledge ? knowledge.sentence : "No training text";
-      document.getElementById("v3Output").textContent = buildInstructionAnswer(prompt);
-    }
-
-    let conversation35 = [];
-
-    const systemLabels = {
-      plain: "Clear plain English",
-      brief: "Direct and brief",
-      teacher: "Step-by-step teacher",
-      bro: "Casual and straight-talking"
+    const text = joinTokens(output);
+    return {
+      text: text ? text[0].toUpperCase() + text.slice(1) : "No continuation found. Try words from the learning text.",
+      note: start.fallback ? "Those starting words weren’t in the sample, so it began with a learned phrase." : "",
+      details: {
+        "Looks back": `${this.contextSize} ${this.contextSize === 1 ? "word" : "words"} at a time`,
+        "Starting pattern": joinTokens(start.words),
+        "Patterns learned": String(this.patterns.size),
+        "How it chose": "Counted what followed each pattern, then sampled a next word.",
+      },
     };
+  }
+}
 
-    function refreshSystemLabel() {
-      const value = document.getElementById("v35System").value;
-      document.getElementById("v35SystemLabel").textContent = systemLabels[value] || systemLabels.plain;
+function chooseWeightedWord(counts, settings, random) {
+  const choices = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, settings.choiceLimit);
+  const weights = choices.map(([word, count]) => [word, Math.pow(count, 1 / settings.randomness)]);
+  let remaining = random() * weights.reduce((total, [, weight]) => total + weight, 0);
+  for (const [word, weight] of weights) {
+    remaining -= weight;
+    if (remaining <= 0) return word;
+  }
+  return weights[weights.length - 1][0];
+}
+
+/* Stages 1 and 2: visible word matching, not neural attention. */
+function normaliseWord(word) {
+  let text = word.toLowerCase().replace(/[^\p{L}\p{N}']/gu, "");
+  if (text.length > 5 && text.endsWith("ing")) text = text.slice(0, -3);
+  else if (text.length > 5 && text.endsWith("ed")) text = text.slice(0, -2);
+  else if (text.length > 3 && text.endsWith("s") && !text.endsWith("ss")) text = text.slice(0, -1);
+  return text;
+}
+
+const stopWords = new Set("a an and are as at be because but by can do does for from had has have how i if in into is it its like me my of on or our so that the their them then there this to was we were what when where which who why will with would you your explain summarise summarize summary list rewrite steps tell about give please".split(" ").map(normaliseWord));
+
+function keywords(text) {
+  return [...new Set(tokenize(text).map(normaliseWord).filter(word => word.length > 1 && !stopWords.has(word)))];
+}
+
+const relatedWords = {
+  ai: ["machine", "model", "language"],
+  model: ["machine", "ai", "text", "pattern"],
+  learn: ["pattern", "train", "text"],
+  train: ["learn", "pattern", "text"],
+  text: ["word", "sentence", "pattern"],
+  language: ["word", "text", "model"],
+  predict: ["guess", "next", "word"],
+  truck: ["road", "passenger", "dog"],
+  dog: ["truck", "window"],
+  work: ["job", "gear", "mower"],
+  lawn: ["mower", "grass", "edge"],
+  mow: ["mower", "grass", "edge"],
+  mower: ["grass", "edge", "gear"],
+};
+
+function rankSentences(text, prompt) {
+  const direct = keywords(prompt);
+  const expanded = new Set(direct.flatMap(word => relatedWords[word] || []).map(normaliseWord));
+  return splitSentences(text).map((sentence, index) => {
+    const words = new Set(keywords(sentence));
+    const matched = direct.filter(word => words.has(word));
+    const related = [...expanded].filter(word => words.has(word) && !matched.includes(word));
+    return { sentence, index, score: matched.length * 4 + related.length, matched, related };
+  }).filter(item => item.score > 0).sort((a, b) => b.score - a.score || a.index - b.index);
+}
+
+function detectTask(prompt) {
+  if (/\b(summarise|summarize|summary|shorter|tldr)\b/i.test(prompt)) return "summarise";
+  if (/\b(list|bullets?|steps)\b/i.test(prompt)) return "list";
+  if (/\b(rewrite|reword)\b/i.test(prompt)) return "rewrite";
+  if (/\b(compare|difference|versus|vs)\b/i.test(prompt)) return "compare";
+  if (/\b(explain|why|how|teach)\b/i.test(prompt)) return "explain";
+  return "answer";
+}
+
+function parseExamples(text) {
+  return [...String(text).matchAll(/Input:\s*([^\n]+)\s*\nOutput:\s*([^\n]+)/gi)].map(match => ({ input: match[1].trim(), output: match[2].trim() }));
+}
+
+function taskAnswer(text, prompt, examples) {
+  const task = detectTask(prompt);
+  const pairs = parseExamples(examples);
+  const exactExample = pairs.find(pair => pair.input.toLowerCase() === prompt.toLowerCase());
+  if (exactExample) return { text: exactExample.output, details: { "Recognised task": task, "Example used": "An exact Input / Output match" } };
+
+  // A colon lets the user supply the actual text of a small task.
+  const inline = prompt.match(/^(?:summari[sz]e|rewrite|reword|list)\s*:\s*([\s\S]+)/i);
+  const ranked = rankSentences(text, prompt);
+  const facts = inline ? splitSentences(inline[1]) : ranked.slice(0, 3).sort((a, b) => a.index - b.index).map(item => item.sentence);
+  if (!facts.length) return noMatchResult();
+  let answer;
+  if (task === "summarise") answer = tidySentence(facts[0]);
+  else if (task === "list") {
+    const items = /\bsteps?\b/i.test(prompt) ? facts.flatMap(fact => fact.split(/,\s*/)) : facts;
+    answer = items.map((fact, index) => `${index + 1}. ${tidySentence(fact)}`).join("\n");
+  }
+  else if (task === "compare") answer = facts.length > 1 ? `First point: ${tidySentence(facts[0])}\n\nSecond point: ${tidySentence(facts[1])}` : `I found one relevant point: ${tidySentence(facts[0])}\n\nAdd a second point to the learning text to compare them.`;
+  else answer = facts.map(tidySentence).join(" ");
+
+  return {
+    text: answer,
+    note: task === "rewrite" ? "This small demo tidies the text; it doesn’t generate a new paraphrase." : "",
+    details: {
+      "Recognised task": task,
+      "Text used": inline ? "Text after the colon in your prompt" : `${facts.length} matching ${facts.length === 1 ? "sentence" : "sentences"} from the learning text`,
+      "Examples available": String(pairs.length),
+      "How it chose": "Used explicit task rules. Examples are reused only for an exact match.",
+    },
+  };
+}
+
+function noMatchResult() {
+  return {
+    text: "I couldn’t find that topic in the learning text. Try asking about something in the sample, or add your own text.",
+    details: { "Matching sentences": "0", "Try next": "Open Learning text to see what’s available." },
+  };
+}
+
+function briefAnswer(text) {
+  const first = splitSentences(text.replace(/^\d+\.\s*/gm, ""))[0] || text;
+  return first.split(/\s+/).slice(0, 40).join(" ");
+}
+
+const styleNames = { plain: "Plain English", brief: "Short and direct", teacher: "Step by step", casual: "Casual" };
+
+function chatAnswer(text, prompt, settings, history) {
+  const lastAssistant = history.filter(message => message.role === "assistant").at(-1);
+  const lastUser = history.filter(message => message.role === "user").at(-1);
+  let result;
+
+  if (/\b(shorter|brief|sum that up|too long)\b/i.test(prompt) && lastAssistant) {
+    result = { text: briefAnswer(lastAssistant.text), details: { "Follow-up used": "Shortened the previous reply" } };
+  } else if (/what did i (ask|say)|remember my question/i.test(prompt) && lastUser) {
+    result = { text: `You previously asked: “${lastUser.text}”`, details: { "Follow-up used": "Looked up your previous message" } };
+  } else {
+    const workingPrompt = lastUser && /\b(it|that|this|they|them)\b/i.test(prompt) ? `${prompt} ${lastUser.text}` : prompt;
+    result = taskAnswer(text, workingPrompt, settings.examples);
+    if (settings.style === "brief") result.text = briefAnswer(result.text);
+    if (settings.style === "teacher" && result.details?.["Recognised task"] !== "list") {
+      result.text = splitSentences(result.text).slice(0, 4).map((sentence, index) => `${index + 1}. ${tidySentence(sentence)}`).join("\n");
     }
+    if (settings.style === "casual") result.text = `Here’s the idea: ${result.text}`;
+  }
+  return { ...result, details: { ...result.details, "Earlier messages": String(history.length), "Reply style": styleNames[settings.style] } };
+}
 
-    function previousMessage(role, skipLast = 0) {
-      const matches = conversation35.filter(message => message.role === role);
-      return matches[matches.length - 1 - skipLast] || null;
+/* The only entry point the interface needs for all five stages. */
+function runModel(stage, prompt, text, options = {}, history = []) {
+  const settings = cleanSettings(options);
+  if (!countWords(text)) return { text: "Add a few sentences to Learning text, then try again.", details: { "Learning text": "Empty" } };
+  if (stage === 0) return new WordChain(text, settings.contextSize).generate(prompt, settings);
+  if (stage === 3) return taskAnswer(text, prompt, settings.examples);
+  if (stage === 4) return chatAnswer(text, prompt, settings, history);
+
+  const matches = rankSentences(text, prompt);
+  if (!matches.length) return noMatchResult();
+  if (stage === 1) {
+    const best = matches[0];
+    return {
+      text: tidySentence(best.sentence),
+      details: {
+        "Prompt keywords": keywords(prompt).join(", ") || "None",
+        "Matching words": [...best.matched, ...best.related].join(", "),
+        "How it chose": "Scored shared words and a small related-word list, then picked one sentence.",
+      },
+    };
+  }
+  const selected = matches.slice(0, 3).sort((a, b) => a.index - b.index);
+  return {
+    text: selected.map(item => tidySentence(item.sentence)).join(" "),
+    details: {
+      "Sentences combined": String(selected.length),
+      "Words in context": String(countWords(selected.map(item => item.sentence).join(" "))),
+      "How it chose": "Joined up to three matching sentences in their original order.",
+    },
+  };
+}
+
+/* INTERFACE AND LOCAL SAVING */
+/* Page copy lives here, so wording can change without touching the models. */
+const STAGES = [
+  {
+    model: "0", name: "Words", caption: "Guess what’s next", title: "Guess the next word.",
+    description: "A tiny model that continues a pattern, one word at a time.",
+    label: "Start with a few words", action: "Generate", prompt: "The dog",
+    examples: ["The dog", "The old truck"],
+    idea: "Patterns are a starting point.",
+    explanation: "It looks at the last few words and counts what usually follows. It can continue a sentence, but it can’t answer a question.",
+    tip: "Try the Simple sample in Learning text. “The dog” can lead to three different words.",
+    visual: '<span class="visual-word">The</span><span class="visual-word">dog</span><span class="visual-arrow">→</span><span class="visual-word emphasis">sat</span>',
+    settingsTitle: "Model settings", settingsSummary: "The defaults work well",
+  },
+  {
+    model: "1", name: "Focus", caption: "Find what matters", title: "Find the relevant words.",
+    description: "This stage searches the whole sample for a sentence that fits.",
+    label: "Ask about the learning text", action: "Find a match", prompt: "How does a small AI learn?",
+    examples: ["How does AI learn?", "What does the dog do?"],
+    idea: "Some words matter more.",
+    explanation: "Instead of following a short word chain, it matches important words in your prompt to a sentence in the sample.",
+    tip: "Ask about a topic in your text. The result is a matching sentence, rather than an answer written from scratch.",
+    visual: '<span class="visual-word">How</span><span class="visual-word emphasis">AI</span><span class="visual-word emphasis">learns</span>',
+    settingsTitle: "About this model", settingsSummary: "One matching sentence",
+  },
+  {
+    model: "2", name: "Context", caption: "Connect the ideas", title: "Put the pieces together.",
+    description: "More than one matching sentence can give a fuller picture.",
+    label: "Ask about a topic", action: "Connect ideas", prompt: "How does a small AI learn?",
+    examples: ["How does AI learn?", "Tell me about the truck"],
+    idea: "More context. A fuller picture.",
+    explanation: "This stage gathers up to three relevant sentences and joins them. More of the learning text can fit into the result.",
+    tip: "Compare this result with Focus. Look for useful details that a single sentence missed.",
+    visual: '<div class="visual-stack"><span class="visual-line"></span><span class="visual-line emphasis"></span><span class="visual-line"></span></div>',
+    settingsTitle: "About this model", settingsSummary: "Up to three matching sentences",
+  },
+  {
+    model: "3", name: "Tasks", caption: "Follow a direction", title: "Give it a small task.",
+    description: "Now the wording of your request changes the shape of the result.",
+    label: "What would you like it to do?", action: "Run task", prompt: "List the steps to mow a lawn.",
+    examples: ["List the steps to mow a lawn.", "Summarise: The dog sat in the truck."],
+    idea: "A prompt can be an instruction.",
+    explanation: "Words like “list” and “summarise” trigger different formatting rules. An exact example can also supply a response.",
+    tip: "Try “list” and then “summarise” on the same topic. Open Task examples to see the sample pairs.",
+    visual: '<div class="visual-task"><span><i>✓</i>Read the task</span><span><i>✓</i>Find the text</span><span><i>✓</i>Shape the reply</span></div>',
+    settingsTitle: "Task examples", settingsSummary: "Small Input / Output pairs",
+  },
+  {
+    model: "3.5", name: "Chat", caption: "Keep a conversation", title: "Keep the conversation going.",
+    description: "Earlier messages give a follow-up something to refer to.",
+    label: "Your message", action: "Send", prompt: "How does a small AI learn?",
+    examples: ["How does AI learn?", "Make that shorter"],
+    idea: "The next message has context.",
+    explanation: "This stage keeps your recent messages. A small set of rules lets it shorten the previous reply or recall your last question.",
+    tip: "Ask a question, then try “Make that shorter” or “What did I ask?”.",
+    visual: '<div><div class="visual-bubble">How does it learn?</div><div class="visual-bubble reply">Let’s break it down.</div></div>',
+    settingsTitle: "Reply style", settingsSummary: "Plain English",
+  },
+];
+
+const STORAGE_KEY = "tiny-ai-playground-v1";
+const byId = id => document.getElementById(id);
+const resultCache = Array(5).fill(null);
+let toastTimer;
+let saveTimer;
+let storageWarningShown = false;
+let pendingInstall = null;
+
+/* Save inputs locally. A blocked or full storage area never stops the app. */
+function loadState() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { /* Use fresh defaults. */ }
+  return {
+    stage: Number.isInteger(saved.stage) && saved.stage >= 0 && saved.stage < STAGES.length ? saved.stage : 0,
+    mode: saved.mode === "compare" ? "compare" : "explore",
+    text: typeof saved.text === "string" ? saved.text.slice(0, 100000) : ORIGINAL_TEXT,
+    prompts: STAGES.map((stage, index) => typeof saved.prompts?.[index] === "string" ? saved.prompts[index].slice(0, 2000) : stage.prompt),
+    comparePrompt: typeof saved.comparePrompt === "string" ? saved.comparePrompt.slice(0, 2000) : "List what a small AI learns from text.",
+    settings: cleanSettings(saved.settings),
+    conversation: Array.isArray(saved.conversation) ? saved.conversation.filter(message => message && ["user", "assistant"].includes(message.role) && typeof message.text === "string").slice(-40).map(message => ({ role: message.role, text: message.text.slice(0, 20000) })) : [],
+  };
+}
+
+const state = loadState();
+
+/* Appearance is independent of the experiment and stays saved between visits. */
+function applyTheme(theme, remember = false) {
+  const dark = theme === "dark";
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  byId("theme-toggle").setAttribute("aria-checked", String(dark));
+  document.querySelector('meta[name="theme-color"]').content = dark ? "#101113" : "#f5f5f7";
+  if (remember) {
+    try { localStorage.setItem("tiny-ai-theme", dark ? "dark" : "light"); }
+    catch { showToast("Theme changed for this visit. Your browser couldn’t save the preference."); }
+  }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch {
+    if (!storageWarningShown) {
+      showToast("Your browser couldn’t save changes. You can still use the app for this visit.");
+      storageWarningShown = true;
     }
+  }
+}
 
-    function firstSentences(text, count = 2) {
-      const sentences = String(text).match(/[^.!?]+[.!?]?/g) || [String(text)];
-      return sentences.slice(0, count).join(" ").trim();
-    }
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 300);
+}
 
-    function applyAssistantStyle(answer, style, prompt) {
-      if (style === "brief") {
-        return firstSentences(answer, 2).split(/\s+/).slice(0, 55).join(" ");
-      }
+function showToast(message) {
+  const toast = byId("toast");
+  toast.textContent = message;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 3600);
+}
 
-      if (style === "teacher" && isAiLearningPrompt(prompt)) {
-        return "Here is the simple process:\n\n1. Feed the model lots of text.\n2. Hide or shift words and make it predict them.\n3. Compare the prediction with the real text.\n4. Adjust the model so the next prediction is a little better.\n5. Repeat that process a huge number of times.\n\nWhen you later type a prompt, it uses those learned patterns to predict a useful answer.";
-      }
+function setError(id, message = "") {
+  byId(id).textContent = message;
+  byId(id).hidden = !message;
+}
 
-      if (style === "teacher") {
-        const parts = (answer.match(/[^.!?]+[.!?]?/g) || [answer]).slice(0, 4);
-        return "Step by step:\n\n" + parts.map((part, index) => `${index + 1}. ${part.trim()}`).join("\n");
-      }
+/* Rendering uses textContent for anything supplied by the user or a model. */
+function renderNavigation() {
+  const navigation = byId("stage-navigation");
+  if (!navigation.children.length) STAGES.forEach((stage, index) => {
+    const button = document.createElement("button");
+    button.className = "stage-button";
+    button.type = "button";
+    button.setAttribute("aria-label", `Stage ${index + 1}: ${stage.name}, model ${stage.model}`);
+    button.innerHTML = `<span class="stage-number">${stage.model}</span><span><span class="stage-name">${stage.name}</span><span class="stage-caption">${stage.caption}</span></span>`;
+    button.addEventListener("click", () => selectStage(index));
+    navigation.append(button);
+  });
+  [...navigation.children].forEach((button, index) => {
+    if (index === state.stage) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  });
+}
 
-      if (style === "bro") {
-        return "Straight answer: " + answer.replace(/^A small language AI/, "a small language AI");
-      }
+function selectMode(mode, focusTab = false) {
+  state.mode = mode;
+  for (const name of ["explore", "compare"]) {
+    const selected = mode === name;
+    byId(`${name}-tab`).setAttribute("aria-selected", String(selected));
+    byId(`${name}-tab`).tabIndex = selected ? 0 : -1;
+    byId(`${name}-view`).hidden = !selected;
+  }
+  if (focusTab) byId(`${mode}-tab`).focus();
+  saveState();
+}
 
-      return answer;
-    }
-
-    function buildChatAnswer(prompt) {
-      const lower = prompt.toLowerCase();
-      const earlierAssistant = previousMessage("assistant");
-      const earlierUser = previousMessage("user", 1);
-      const style = document.getElementById("v35System").value;
-
-      if (/\b(shorter|brief|sum that up|too long)\b/.test(lower) && earlierAssistant) {
-        const shortAnswer = firstSentences(earlierAssistant.text, 1)
-          .split(/\s+/)
-          .slice(0, 28)
-          .join(" ");
-        return style === "bro" ? "Yep — short version: " + shortAnswer : "Short version: " + shortAnswer;
-      }
-
-      if (/what did i (ask|say)|remember my question/.test(lower) && earlierUser) {
-        return `You previously asked: “${earlierUser.text}”`;
-      }
-
-      let workingPrompt = prompt;
-      if (/\b(it|that|this|they|them)\b/.test(lower) && earlierUser) {
-        workingPrompt += " " + earlierUser.text;
-      }
-
-      const answer = buildInstructionAnswer(workingPrompt);
-      return applyAssistantStyle(answer, style, workingPrompt);
-    }
-
-    function renderConversation35() {
-      const chat = document.getElementById("v35Chat");
-      chat.textContent = "";
-
-      if (!conversation35.length) {
-        const empty = document.createElement("div");
-        empty.className = "chat-empty";
-        empty.textContent = "Your conversation will appear here.";
-        chat.appendChild(empty);
-      } else {
-        conversation35.forEach(message => {
-          const bubble = document.createElement("div");
-          bubble.className = "message " + message.role;
-
-          const role = document.createElement("span");
-          role.className = "message-role";
-          role.textContent = message.role === "user" ? "You" : "ChatGPT 3.5";
-
-          const body = document.createElement("span");
-          body.textContent = message.text;
-
-          bubble.appendChild(role);
-          bubble.appendChild(body);
-          chat.appendChild(bubble);
-        });
-
-        chat.scrollTop = chat.scrollHeight;
-      }
-
-      document.getElementById("v35MessageCount").textContent = String(conversation35.length);
-      renderMemory35();
-    }
-
-    function renderMemory35() {
-      const tray = document.getElementById("v35Memory");
-      tray.textContent = "";
-      const counts = new Map();
-
-      conversation35
-        .filter(message => message.role === "user")
-        .flatMap(message => contentTokens(message.text))
-        .forEach(word => counts.set(word, (counts.get(word) || 0) + 1));
-
-      const topics = Array.from(counts.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6)
-        .map(item => item[0]);
-
-      if (!topics.length) {
-        tray.textContent = "Nothing yet";
-        return;
-      }
-
-      topics.forEach(topic => {
-        const chip = document.createElement("span");
-        chip.className = "memory-chip";
-        chip.textContent = topic;
-        tray.appendChild(chip);
-      });
-    }
-
-    function runVersion35(customPrompt, resetFirst = false) {
-      const input = document.getElementById("v35Prompt");
-      const prompt = typeof customPrompt === "string" ? customPrompt.trim() : input.value.trim();
-      if (typeof customPrompt === "string") input.value = prompt;
-      if (!prompt) return;
-
-      if (resetFirst) conversation35 = [];
-
-      conversation35.push({ role: "user", text: prompt });
-      const answer = buildChatAnswer(prompt);
-      conversation35.push({ role: "assistant", text: answer });
-      renderConversation35();
-      refreshSystemLabel();
-
-      if (typeof customPrompt !== "string") input.value = "";
-    }
-
-    function clearVersion35() {
-      conversation35 = [];
-      document.getElementById("v35Prompt").value = "";
-      renderConversation35();
-    }
-
-    function handleChatKey(event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        runVersion35();
-      }
-    }
-
-    async function copyVersionOutput(elementId) {
-      const text = document.getElementById(elementId).textContent;
-      try {
-        await navigator.clipboard.writeText(text);
-        document.getElementById("comparisonStatus").textContent = "Output copied.";
-      } catch (error) {
-        document.getElementById("comparisonStatus").textContent = "Copy was blocked by the browser. You can highlight the output manually.";
-      }
-    }
-
-    function runAllVersions() {
-      const shared = document.getElementById("evolutionPrompt");
-      const prompt = shared.value.trim();
-
-      if (!prompt) {
-        document.getElementById("comparisonStatus").textContent = "Type a comparison prompt first.";
-        shared.focus();
-        return;
-      }
-
-      document.getElementById("prompt").value = prompt;
-      document.getElementById("v1Prompt").value = prompt;
-      document.getElementById("v2Prompt").value = prompt;
-      document.getElementById("v3Prompt").value = prompt;
-      document.getElementById("v35Prompt").value = prompt;
-
-      generateText();
-      runVersion1(prompt);
-      runVersion2(prompt);
-      runVersion3(prompt);
-      runVersion35(prompt, true);
-
-      document.getElementById("comparisonStatus").textContent =
-        "Done — the same prompt has now run through ChatGPT 0, 1, 2, 3 and 3.5.";
-    }
-
-    function openHelp() {
-      document.getElementById("helpBackdrop").classList.add("show");
-    }
-
-    function closeHelp() {
-      document.getElementById("helpBackdrop").classList.remove("show");
-    }
-
-    function backdropClose(event) {
-      if (event.target.id === "helpBackdrop") {
-        closeHelp();
-      }
-    }
-
-    document.addEventListener("keydown", function(event) {
-      if (event.key === "Escape") {
-        closeHelp();
-      }
+function selectStage(index, focusHeading = false) {
+  state.stage = index;
+  const stage = STAGES[index];
+  renderNavigation();
+  byId("stage-counter").textContent = `STAGE ${String(index + 1).padStart(2, "0")} OF 05`;
+  byId("stage-title").textContent = stage.title;
+  byId("stage-description").textContent = stage.description;
+  byId("model-badge").textContent = `Model ${stage.model}`;
+  byId("prompt-label").textContent = stage.label;
+  byId("prompt").value = state.prompts[index];
+  byId("prompt").placeholder = index === 4 ? "Ask a follow-up…" : stage.prompt;
+  byId("run-label").textContent = stage.action;
+  byId("result-label").textContent = index === 4 ? "THE CONVERSATION" : "THE RESULT";
+  byId("clear-chat-button").hidden = index !== 4 || !state.conversation.length;
+  byId("prediction-button").hidden = index !== 0;
+  byId("predictions").hidden = true;
+  byId("concept-visual").innerHTML = stage.visual;
+  byId("idea-title").textContent = stage.idea;
+  byId("idea-description").textContent = stage.explanation;
+  byId("idea-tip").textContent = stage.tip;
+  byId("settings-title").textContent = stage.settingsTitle;
+  byId("settings-summary").textContent = index === 4 ? styleName(state.settings.style) : stage.settingsSummary;
+  byId("previous-button").disabled = index === 0;
+  byId("next-label").textContent = index === 4 ? "Compare all five" : `Next: ${STAGES[index + 1].caption}`;
+  byId("examples").replaceChildren();
+  const customStarts = [...new Set(splitSentences(state.text).map(sentence => tokenize(sentence).slice(0, Math.max(2, state.settings.contextSize)).join(" ")))];
+  const examples = index === 0 && state.text !== ORIGINAL_TEXT ? customStarts.slice(0, 2) : stage.examples;
+  const tryLabel = document.createElement("span");
+  tryLabel.textContent = "Try";
+  if (examples.length) byId("examples").append(tryLabel);
+  examples.forEach(example => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "example-button";
+    button.textContent = example;
+    button.addEventListener("click", () => {
+      state.prompts[index] = example;
+      byId("prompt").value = example;
+      runExperiment();
     });
+    byId("examples").append(button);
+  });
+  setError("prompt-error");
+  renderResult();
+  renderSourceSummary();
+  if (focusHeading) {
+    byId("stage-title").tabIndex = -1;
+    byId("stage-title").focus({ preventScroll: true });
+    byId("stage-navigation").scrollIntoView({ block: "start", behavior: "auto" });
+  }
+  saveState();
+}
 
-    refreshSystemLabel();
-    runAllVersions();
-  </script>
+function renderSourceSummary() {
+  const words = countWords(state.text);
+  byId("source-summary").textContent = words ? `${words.toLocaleString()} words · Edit sample` : "No text yet · Add some";
+}
+
+function renderDiagnostics(details = {}) {
+  const list = byId("diagnostics");
+  list.replaceChildren();
+  for (const [label, value] of Object.entries(details)) {
+    const term = document.createElement("dt");
+    const description = document.createElement("dd");
+    term.textContent = label;
+    description.textContent = value;
+    list.append(term, description);
+  }
+}
+
+function renderResult() {
+  const result = resultCache[state.stage];
+  const isChat = state.stage === 4;
+  const hasChat = isChat && state.conversation.length > 0;
+  byId("result").replaceChildren();
+  byId("result-details").hidden = !result;
+  byId("result-details").open = false;
+  byId("result-note").hidden = !result?.note;
+  byId("result-note").textContent = result?.note || "";
+  byId("copy-button").disabled = !result && !hasChat;
+  byId("clear-chat-button").hidden = !hasChat;
+  if (hasChat) {
+    const log = document.createElement("div");
+    log.className = "chat-log";
+    log.setAttribute("role", "log");
+    log.setAttribute("aria-label", "Conversation");
+    state.conversation.forEach(message => {
+      const bubble = document.createElement("div");
+      bubble.className = `chat-message ${message.role}`;
+      const role = document.createElement("span");
+      role.className = "chat-role";
+      role.textContent = message.role === "user" ? "You" : "Tiny AI";
+      const content = document.createElement("span");
+      content.textContent = message.text;
+      bubble.append(role, content);
+      log.append(bubble);
+    });
+    byId("result").append(log);
+    log.scrollTop = log.scrollHeight;
+  } else if (result) byId("result").textContent = result.text;
+  else {
+    const empty = document.createElement("div");
+    empty.className = "empty-result";
+    const title = document.createElement("strong");
+    title.textContent = isChat ? "A conversation starts with a question." : "A few words can start something.";
+    const description = document.createElement("p");
+    description.textContent = isChat ? "Send a message and see how it responds." : "Try an example above, or write your own.";
+    empty.append(title, description);
+    byId("result").append(empty);
+  }
+  renderDiagnostics(result?.details);
+}
+
+function runExperiment() {
+  const prompt = byId("prompt").value.trim();
+  if (!prompt) {
+    setError("prompt-error", state.stage === 4 ? "Write a message first." : "Add a few words, or choose an example.");
+    byId("prompt").setAttribute("aria-invalid", "true");
+    byId("prompt").focus();
+    return;
+  }
+  setError("prompt-error");
+  byId("prompt").removeAttribute("aria-invalid");
+  state.prompts[state.stage] = prompt;
+  const result = runModel(state.stage, prompt, state.text, state.settings, state.conversation);
+  resultCache[state.stage] = result;
+  if (state.stage === 4) {
+    state.conversation.push({ role: "user", text: prompt }, { role: "assistant", text: result.text });
+    state.conversation = state.conversation.slice(-40);
+    state.prompts[4] = "";
+    byId("prompt").value = "";
+  }
+  byId("predictions").hidden = true;
+  renderResult();
+  saveState();
+}
+
+function renderPredictions() {
+  if (!byId("prompt").value.trim()) { setError("prompt-error", "Add starting words to predict what follows them."); return; }
+  const prediction = new WordChain(state.text, state.settings.contextSize).predictions(byId("prompt").value);
+  const container = byId("predictions");
+  container.replaceChildren();
+  container.hidden = false;
+  const context = document.createElement("p");
+  context.className = "prediction-context";
+  context.textContent = prediction.choices.length ? `After “${prediction.context}”, the sample contains:` : prediction.note;
+  container.append(context);
+  prediction.choices.forEach(choice => {
+    const row = document.createElement("div");
+    row.className = "prediction-row";
+    const word = document.createElement("span");
+    word.textContent = choice.word;
+    const track = document.createElement("div");
+    track.className = "prediction-track";
+    const fill = document.createElement("div");
+    fill.className = "prediction-fill";
+    fill.style.width = `${choice.probability * 100}%`;
+    track.append(fill);
+    const percentage = document.createElement("span");
+    percentage.textContent = `${Math.round(choice.probability * 100)}%`;
+    row.append(word, track, percentage);
+    container.append(row);
+  });
+}
+
+function runComparison() {
+  const prompt = byId("compare-prompt").value.trim();
+  if (!prompt) { setError("compare-error", "Type a prompt to compare the models."); byId("compare-prompt").focus(); return; }
+  setError("compare-error");
+  state.comparePrompt = prompt;
+  // A comparison has its own clean history; it never clears the Explore chat.
+  const results = STAGES.map((stage, index) => runModel(index, prompt, state.text, state.settings, []));
+  const list = document.createElement("div");
+  list.className = "compare-results-list";
+  results.forEach((result, index) => {
+    const stage = STAGES[index];
+    const card = document.createElement("article");
+    card.className = "comparison-card panel";
+    const info = document.createElement("div");
+    info.className = "comparison-model";
+    info.innerHTML = `<span class="model-badge">Model ${stage.model}</span><h3>${stage.name}</h3><p>${stage.caption}</p>`;
+    const open = document.createElement("button");
+    open.className = "text-button comparison-open";
+    open.textContent = "Explore this stage →";
+    open.addEventListener("click", () => {
+      if (index !== 4) {
+        state.prompts[index] = prompt;
+        resultCache[index] = result;
+      }
+      selectMode("explore");
+      selectStage(index, true);
+    });
+    info.append(open);
+    const body = document.createElement("div");
+    const output = document.createElement("p");
+    output.className = "comparison-output";
+    output.textContent = result.text;
+    body.append(output);
+    if (result.note) {
+      const note = document.createElement("p");
+      note.className = "comparison-note";
+      note.textContent = result.note;
+      body.append(note);
+    }
+    card.append(info, body);
+    list.append(card);
+  });
+  byId("comparison-results").replaceChildren(list);
+  saveState();
+}
+
+/* Dialogs use drafts: closing a sheet leaves the saved inputs alone. */
+function openSource() {
+  byId("source-text").value = state.text;
+  updateSourceCount();
+  byId("source-dialog").showModal();
+}
+
+function updateSourceCount() {
+  const text = byId("source-text").value;
+  byId("source-count").textContent = `${countWords(text).toLocaleString()} words · ${splitSentences(text).length} sentences`;
+}
+
+function clearStaleResults() {
+  resultCache.fill(null);
+  state.conversation = [];
+  const empty = document.createElement("div");
+  empty.className = "compare-empty";
+  empty.textContent = "Learning text updated. Run the comparison again to see the changes.";
+  byId("comparison-results").replaceChildren(empty);
+  renderResult();
+}
+
+function styleName(style) { return { plain: "Plain English", brief: "Short and direct", teacher: "Step by step", casual: "Casual" }[style]; }
+
+function fillSettings(settings) {
+  const stage = state.stage;
+  byId("settings-eyebrow").textContent = `MODEL ${STAGES[stage].model}`;
+  byId("settings-dialog-title").textContent = stage === 3 ? "A little learning by example." : stage === 4 ? "How should it reply?" : stage === 1 || stage === 2 ? "Simple by design." : "Make a small adjustment.";
+  const fields = byId("settings-fields");
+  if (stage === 0) {
+    fields.innerHTML = `
+      <div class="setting-field"><label for="context-size">Words to look back</label><select id="context-size" name="contextSize"><option value="1">1 word — more variety</option><option value="2">2 words — a good starting point</option><option value="3">3 words — needs more text</option></select><p>The number of previous words used to choose the next one.</p></div>
+      <div class="setting-field"><div class="setting-label"><label for="randomness">Randomness</label><output id="randomness-value" for="randomness"></output></div><input type="range" id="randomness" name="randomness" min="0.1" max="3" step="0.1"><div class="range-labels"><span>More predictable</span><span>More variety</span></div></div>
+      <div class="setting-field"><label for="max-words">Maximum new words</label><input type="number" id="max-words" name="maxWords" min="5" max="500" step="1"><p>The result may stop sooner at the end of a sentence.</p></div>
+      <div class="setting-field"><label for="choice-limit">Next-word choices</label><input type="number" id="choice-limit" name="choiceLimit" min="1" max="50" step="1"><p>Choose from this many of the most frequent next words.</p></div>`;
+    byId("context-size").value = settings.contextSize;
+    byId("randomness").value = settings.randomness;
+    byId("randomness-value").value = Number(settings.randomness).toFixed(1);
+    byId("randomness").addEventListener("input", event => { byId("randomness-value").value = Number(event.target.value).toFixed(1); });
+    byId("max-words").value = settings.maxWords;
+    byId("choice-limit").value = settings.choiceLimit;
+  } else if (stage === 3) {
+    fields.innerHTML = '<p class="sheet-description">The demo reuses an example when its Input exactly matches your prompt. Other tasks use the learning text and simple formatting rules.</p><label for="task-examples">Input / Output pairs</label><textarea id="task-examples" name="examples" rows="9" maxlength="10000" spellcheck="false"></textarea>';
+    byId("task-examples").value = settings.examples;
+  } else if (stage === 4) {
+    fields.innerHTML = '<div class="setting-field"><label for="reply-style">Reply style</label><select id="reply-style" name="style"><option value="plain">Plain English</option><option value="brief">Short and direct</option><option value="teacher">Step by step</option><option value="casual">Casual</option></select><p>This changes future replies. Earlier messages stay as they are.</p></div>';
+    byId("reply-style").value = settings.style;
+  } else fields.innerHTML = `<p class="sheet-description">${STAGES[stage].explanation}</p><div class="honesty-note"><strong>No settings needed.</strong><p>Change your prompt or the Learning text to see a different result. “See how it worked” shows the rules behind the choice.</p></div>`;
+  byId("reset-settings").hidden = stage === 1 || stage === 2;
+}
+
+async function copyResult() {
+  const text = state.stage === 4 ? state.conversation.map(message => `${message.role === "user" ? "You" : "Tiny AI"}: ${message.text}`).join("\n\n") : resultCache[state.stage]?.text;
+  if (!text) return;
+  try { await navigator.clipboard.writeText(text); showToast("Copied."); }
+  catch { showToast("Copy isn’t available here. You can select and copy the result instead."); }
+}
+
+/* Wire up the interface once. Model functions never manipulate these elements. */
+byId("theme-toggle").addEventListener("click", () => {
+  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
+});
+byId("prompt-form").addEventListener("submit", event => { event.preventDefault(); runExperiment(); });
+byId("prompt").addEventListener("input", event => {
+  state.prompts[state.stage] = event.target.value;
+  setError("prompt-error");
+  event.target.removeAttribute("aria-invalid");
+  byId("predictions").hidden = true;
+  if (state.stage !== 4) { resultCache[state.stage] = null; renderResult(); }
+  scheduleSave();
+});
+byId("prompt").addEventListener("keydown", event => {
+  if (event.key === "Enter" && (event.metaKey || event.ctrlKey || state.stage === 4 && !event.shiftKey) && !event.isComposing) { event.preventDefault(); runExperiment(); }
+});
+byId("compare-form").addEventListener("submit", event => { event.preventDefault(); runComparison(); });
+byId("compare-prompt").addEventListener("input", event => {
+  state.comparePrompt = event.target.value;
+  setError("compare-error");
+  const hint = document.createElement("div");
+  hint.className = "compare-empty";
+  hint.textContent = "Run the comparison to see results for this prompt.";
+  byId("comparison-results").replaceChildren(hint);
+  scheduleSave();
+});
+byId("compare-prompt").addEventListener("keydown", event => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) { event.preventDefault(); runComparison(); } });
+byId("explore-tab").addEventListener("click", () => selectMode("explore"));
+byId("compare-tab").addEventListener("click", () => selectMode("compare"));
+document.querySelector('[role="tablist"]').addEventListener("keydown", event => {
+  if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+    event.preventDefault();
+    selectMode(event.key === "Home" ? "explore" : event.key === "End" ? "compare" : state.mode === "explore" ? "compare" : "explore", true);
+  }
+});
+byId("previous-button").addEventListener("click", () => { if (state.stage > 0) selectStage(state.stage - 1, true); });
+byId("next-button").addEventListener("click", () => state.stage < 4 ? selectStage(state.stage + 1, true) : selectMode("compare", true));
+byId("prediction-button").addEventListener("click", renderPredictions);
+byId("copy-button").addEventListener("click", copyResult);
+byId("clear-chat-button").addEventListener("click", () => { state.conversation = []; resultCache[4] = null; renderResult(); saveState(); showToast("Conversation cleared."); });
+byId("source-button").addEventListener("click", openSource);
+byId("compare-source-button").addEventListener("click", openSource);
+byId("source-text").addEventListener("input", updateSourceCount);
+byId("simple-preset").addEventListener("click", () => { byId("source-text").value = SIMPLE_TEXT; updateSourceCount(); });
+byId("original-preset").addEventListener("click", () => { byId("source-text").value = ORIGINAL_TEXT; updateSourceCount(); });
+byId("clear-source").addEventListener("click", () => { byId("source-text").value = ""; updateSourceCount(); byId("source-text").focus(); });
+byId("source-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const text = byId("source-text").value;
+  if (text !== state.text) { state.text = text; clearStaleResults(); }
+  renderSourceSummary();
+  byId("predictions").hidden = true;
+  byId("source-dialog").close();
+  saveState();
+  showToast(text.trim() ? "Learning text updated. Try a prompt." : "Learning text cleared.");
+});
+byId("settings-button").addEventListener("click", () => { fillSettings(state.settings); byId("settings-dialog").showModal(); });
+byId("reset-settings").addEventListener("click", () => fillSettings(DEFAULT_SETTINGS));
+byId("settings-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const draft = Object.fromEntries(new FormData(event.target));
+  state.settings = cleanSettings({ ...state.settings, ...draft });
+  if (state.stage !== 4 && state.stage !== 1 && state.stage !== 2) resultCache[state.stage] = null;
+  byId("settings-dialog").close();
+  selectStage(state.stage);
+  saveState();
+});
+for (const id of ["help-button", "about-button"]) byId(id).addEventListener("click", () => byId("help-dialog").showModal());
+document.querySelectorAll("[data-close-dialog]").forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
+document.querySelectorAll("dialog").forEach(dialog => dialog.addEventListener("click", event => {
+  const rect = dialog.getBoundingClientRect();
+  if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+}));
+window.addEventListener("pagehide", saveState);
+
+/* Installation is offered only when the browser supports an install prompt. */
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  pendingInstall = event;
+  byId("install-button").hidden = false;
+});
+byId("install-button").addEventListener("click", async () => {
+  if (!pendingInstall) return;
+  const install = pendingInstall;
+  pendingInstall = null;
+  await install.prompt();
+  await install.userChoice;
+  byId("install-button").hidden = true;
+});
+window.addEventListener("appinstalled", () => { pendingInstall = null; byId("install-button").hidden = true; showToast("Tiny AI is ready on your home screen."); });
+if ("serviceWorker" in navigator && ["https:", "http:"].includes(location.protocol)) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {
+    // The app still works if this host doesn't support service workers.
+  });
+}
+
+applyTheme(document.documentElement.dataset.theme);
+byId("compare-prompt").value = state.comparePrompt;
+selectStage(state.stage);
+selectMode(state.mode);
+
+</script>
 </body>
 </html>
